@@ -46,16 +46,7 @@ export function DeleteAccountCard() {
             La suppression de votre compte est irréversible. Toutes vos données seront perdues.
           </p>
 
-          {!confirming ? (
-            <button
-              type="button"
-              onClick={() => setConfirming(true)}
-              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700"
-            >
-              <Trash2 className="h-4 w-4" />
-              Supprimer mon compte
-            </button>
-          ) : (
+          {confirming && (
             <form onSubmit={handleDelete} className="mt-4 space-y-3">
               <p className="text-xs font-medium text-red-700">
                 Confirmez avec votre mot de passe pour supprimer définitivement votre compte.
@@ -107,6 +98,17 @@ export function DeleteAccountCard() {
             </form>
           )}
         </div>
+
+        {!confirming && (
+          <button
+            type="button"
+            onClick={() => setConfirming(true)}
+            className="inline-flex shrink-0 items-center gap-2 self-start rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700"
+          >
+            <Trash2 className="h-4 w-4" />
+            Supprimer mon compte
+          </button>
+        )}
       </div>
     </motion.div>
   );

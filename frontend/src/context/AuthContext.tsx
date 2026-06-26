@@ -7,7 +7,7 @@ import { saveAuth, clearAuth, getStoredUser, getToken } from "@/lib/auth";
 type AuthContextType = {
   user: AuthUser | null;
   token: string | null;
-  login: (token: string, user: AuthUser) => void;
+  login: (token: string, user: AuthUser, rememberMe?: boolean) => void;
   logout: () => void;
   updateUser: (user: AuthUser) => void;
   isLoading: boolean;
@@ -33,8 +33,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  function login(tok: string, u: AuthUser) {
-    saveAuth(tok, u);
+  function login(tok: string, u: AuthUser, rememberMe = true) {
+    saveAuth(tok, u, rememberMe);
     setToken(tok);
     setUser(u);
   }
