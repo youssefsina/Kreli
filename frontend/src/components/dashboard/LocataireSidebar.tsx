@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -63,16 +64,15 @@ export default function LocataireSidebar({ onClose, unreadMessages = 0 }: Props)
     >
 
       <div className="flex items-center justify-between px-5 pt-6 pb-7">
-        <Link href="/" onClick={onClose} className="flex items-center gap-2.5">
-          <div
-            className="grid h-8 w-8 place-items-center rounded-xl text-[13px] font-black text-white"
-            style={{ background: "#0F172A" }}
-          >
-            K
-          </div>
-          <span className="text-[18px] font-black tracking-tight text-[#0F172A]">
-            Kreli<span style={{ color: "#F97316" }}>.</span>
-          </span>
+        <Link href="/" onClick={onClose} className="flex shrink-0 items-center leading-none" aria-label="Kreli">
+          <Image
+            src="/logo.png"
+            alt="Kreli"
+            width={600}
+            height={300}
+            priority
+            className="h-9 w-auto object-contain"
+          />
         </Link>
         {onClose && (
           <button
