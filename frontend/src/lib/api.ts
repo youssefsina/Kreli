@@ -48,7 +48,7 @@ export type AuthResponse = {
 
 const DEFAULT_API_BASE_URL =
   process.env.NODE_ENV === "production"
-    ? "https://locamat-backend.up.railway.app/api/v1"
+    ? "https://kreli-production.up.railway.app/api/v1"
     : "http://localhost:5000/api/v1";
 
 export function getApiBaseUrl(): string {
