@@ -9,6 +9,7 @@ const { verifyToken, requireRole } = require("../middleware/auth.middleware");
 router.get("/me", verifyToken, usersController.getProfile);
 router.put("/me", verifyToken, ...usersController.updateProfile);
 router.put("/me/password", verifyToken, ...usersController.changePassword);
+router.delete("/me", verifyToken, ...usersController.deleteAccount);
 
 
 router.get("/stats/admin", verifyToken, requireRole("admin"), usersController.getAdminStats);

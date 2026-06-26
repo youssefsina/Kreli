@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { getMyProfile, updateMyProfile, getLocataireStats, uploadMaterielImage, type AuthUser } from "@/lib/api";
-import { User, Mail, Phone, MapPin, Save, Package, Wallet, Shield, AlertCircle } from "lucide-react";
+import { User, Mail, Phone, MapPin, Save, Package, Wallet, Shield } from "lucide-react";
 import { DashCard, Alert, FormField, DashInput, StatChip } from "@/components/dashboard/DashboardUI";
 import { formatMonthYear } from "@/lib/format";
 import { ProfileHeader } from "./ProfileHeader";
 import { SecurityForm } from "./SecurityForm";
+import { DeleteAccountCard } from "@/components/dashboard/DeleteAccountCard";
 
 const STAGGER = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 const ITEM = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.35 } } };
@@ -201,28 +202,7 @@ export default function LocataireProfilePage() {
         <SecurityForm />
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.35 }}
-        className="rounded-[20px] bg-red-50 border border-red-200 p-6"
-      >
-        <div className="flex items-start gap-4">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-100">
-            <AlertCircle className="h-4 w-4 text-red-500" />
-          </div>
-          <div className="flex-1">
-            <h2 className="font-bold text-red-800">Zone de danger</h2>
-            <p className="mt-1 text-xs text-red-600">La suppression de votre compte est irréversible. Toutes vos données seront perdues.</p>
-          </div>
-          <button
-            className="shrink-0 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700 transition-colors"
-            onClick={() => alert("Fonctionnalité disponible prochainement.")}
-          >
-            Supprimer mon compte
-          </button>
-        </div>
-      </motion.div>
+      <DeleteAccountCard />
     </div>
   );
 }
