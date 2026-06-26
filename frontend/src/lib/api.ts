@@ -631,7 +631,7 @@ export async function getConversationMessages(conversationId: string): Promise<C
 
 function getToken(): string {
   if (typeof window === "undefined") return "";
-  return localStorage.getItem("Kreli_token") ?? "";
+  return localStorage.getItem("Kreli_token") ?? sessionStorage.getItem("Kreli_token") ?? "";
 }
 
 
