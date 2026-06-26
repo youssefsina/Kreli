@@ -14,6 +14,7 @@ import { DashCard, Alert, FormField, DashInput, StatChip } from "@/components/da
 import { formatMonthYear } from "@/lib/format";
 import { ProfileHeader } from "./ProfileHeader";
 import { SecurityForm } from "./SecurityForm";
+import { DeleteAccountCard } from "@/components/dashboard/DeleteAccountCard";
 
 const STAGGER = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
 const ITEM = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.32 } } };
@@ -224,6 +225,8 @@ export default function ProprietaireProfilePage() {
           </div>
         </DashCard>
       </motion.div>
+
+      <DeleteAccountCard />
     </div>
   );
 }

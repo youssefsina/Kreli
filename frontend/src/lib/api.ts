@@ -434,6 +434,19 @@ export async function changePassword(data: {
   if (!response.ok) throw new Error(body.message ?? "Erreur");
 }
 
+export async function deleteMyAccount(password: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/users/me`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify({ password }),
+  });
+  const body = await response.json();
+  if (!response.ok) throw new Error(body.message ?? "Erreur lors de la suppression du compte");
+}
+
 export async function forgotPassword(email: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
     method: "POST",
