@@ -17,9 +17,9 @@ export const metadata: Metadata = {
   title: { default: 'Kreli | Location de matériels professionnels au Maroc', template: '%s | Kreli' },
   description: SITE_DESCRIPTION,
   icons: {
-    icon: [{ url: '/favicon.png', type: 'image/png' }],
-    shortcut: '/favicon.png',
-    apple: '/favicon.png',
+    icon: [{ url: '/favicon.ico', type: 'image/x-icon' }],
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
   },
   keywords: ['location matériel Maroc', 'location engins BTP', 'location outils professionnels', 'matériel chantier Maroc', 'location équipement Casablanca', 'location nacelle Maroc', 'location grue Maroc', 'location compresseur Maroc'],
   authors: [{ name: 'Kreli' }],

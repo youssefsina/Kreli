@@ -48,7 +48,7 @@ export type AuthResponse = {
 
 const DEFAULT_API_BASE_URL =
   process.env.NODE_ENV === "production"
-    ? "https://locamat-backend.up.railway.app/api/v1"
+    ? "https://kreli-production.up.railway.app/api/v1"
     : "http://localhost:5000/api/v1";
 
 export function getApiBaseUrl(): string {
@@ -434,6 +434,19 @@ export async function changePassword(data: {
   if (!response.ok) throw new Error(body.message ?? "Erreur");
 }
 
+export async function deleteMyAccount(password: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/users/me`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify({ password }),
+  });
+  const body = await response.json();
+  if (!response.ok) throw new Error(body.message ?? "Erreur lors de la suppression du compte");
+}
+
 export async function forgotPassword(email: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
     method: "POST",
@@ -618,7 +631,7 @@ export async function getConversationMessages(conversationId: string): Promise<C
 
 function getToken(): string {
   if (typeof window === "undefined") return "";
-  return localStorage.getItem("Kreli_token") ?? "";
+  return localStorage.getItem("Kreli_token") ?? sessionStorage.getItem("Kreli_token") ?? "";
 }
 
 

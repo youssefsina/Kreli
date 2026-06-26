@@ -45,24 +45,47 @@ interface Materiel {
   nombreLocations?: number;
 }
 
+type RevenueLoc = { statut?: string; createdAt?: string; montantNetProprio?: number };
+
+function buildMonthly(locs: RevenueLoc[]): { month: string; revenue: number }[] {
+  const map: Record<string, number> = {};
+  for (const l of locs) {
+    if (l.statut !== "terminee" && l.statut !== "en_cours") continue;
+    const d = new Date(l.createdAt ?? "");
+    if (Number.isNaN(d.getTime())) continue;
+    const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    map[k] = (map[k] ?? 0) + (l.montantNetProprio ?? 0);
+  }
+  return Object.entries(map)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .slice(-6)
+    .map(([month, revenue]) => ({
+      month: new Date(`${month}-01`).toLocaleDateString("fr-MA", { month: "short" }),
+      revenue,
+    }));
+}
+
 export default function ProprietaireDashboardPage() {
   const [stats, setStats] = useState<OwnerStats | null>(null);
   const [locations, setLocations] = useState<Location[]>([]);
   const [materiels, setMateriels] = useState<Materiel[]>([]);
+  const [monthly, setMonthly] = useState<{ month: string; revenue: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [statsData, locationsData, materielsData] = await Promise.all([
+        const [statsData, locationsData, materielsData, allLocsData] = await Promise.all([
           getOwnerStats(),
           getOwnerLocations({ statut: "en_attente", limit: 4 }),
           getMyMateriels({ limit: 4 }),
+          getOwnerLocations({ limit: 200 }),
         ]);
         setStats(statsData);
         setLocations(locationsData.data);
         setMateriels(materielsData.data);
+        setMonthly(buildMonthly(allLocsData.data as unknown as RevenueLoc[]));
       } catch {
 
       } finally {
@@ -173,7 +196,7 @@ export default function ProprietaireDashboardPage() {
 
       <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_380px]">
         <RevenueChartCard
-          revenus={stats?.revenus ?? 0}
+          monthly={monthly}
           totalMateriels={totalMateriels}
           enLocation={enLocation}
           pending={pending}

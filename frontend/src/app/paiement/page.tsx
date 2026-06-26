@@ -117,7 +117,7 @@ export default function PaiementPage() {
               </div>
             </div>
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            <div className="mt-8 grid gap-4">
               <button
                 type="button"
                 disabled
@@ -132,17 +132,6 @@ export default function PaiementPage() {
                 <p className="mt-5 font-black text-slate-800">Carte bancaire</p>
                 <p className="mt-1 text-xs text-slate-500">Visa, Mastercard</p>
               </button>
-
-              <div className="rounded-2xl border-2 border-[#ff6700] bg-orange-50/50 p-5 text-left">
-                <div className="flex items-center justify-between gap-3">
-                  <Banknote className="h-6 w-6 text-[#ff6700]" />
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#ff6700]">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#ff6700]" />
-                  </span>
-                </div>
-                <p className="mt-5 font-black text-slate-950">Espèces</p>
-                <p className="mt-1 text-xs text-slate-500">Paiement lors de la remise du matériel</p>
-              </div>
             </div>
 
             {error && (
@@ -194,7 +183,7 @@ export default function PaiementPage() {
             )}
             <div className="mt-5 flex gap-3 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">
               <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" />
-              La demande sera envoyée au propriétaire. Vous paierez en espèces lors de la remise.
+              La demande sera envoyée au propriétaire pour validation.
             </div>
           </aside>
         </div>

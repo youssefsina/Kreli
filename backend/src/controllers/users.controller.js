@@ -42,6 +42,57 @@ exports.updateProfile = [
   },
 ];
 
+const ACTIVE_LOCATION_STATUTS = ["en_attente", "acceptee", "en_cours", "en_retard", "en_litige"];
+
+exports.deleteAccount = [
+  body("password").notEmpty().withMessage("Mot de passe requis pour confirmer la suppression"),
+  validate,
+  async (req, res) => {
+    try {
+      const user = await User.findById(req.user._id);
+      if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
+
+      const valid = await bcrypt.compare(req.body.password, user.password);
+      if (!valid) return res.status(400).json({ message: "Mot de passe incorrect" });
+
+      // Bloquer la suppression si des locations sont encore actives (en tant que locataire)
+      const asRenter = await Location.countDocuments({
+        locataireId: user._id,
+        statut: { $in: ACTIVE_LOCATION_STATUTS },
+      });
+      if (asRenter > 0) {
+        return res.status(400).json({
+          message: "Impossible de supprimer le compte : vous avez des locations en cours.",
+        });
+      }
+
+      // Bloquer si du matériel possédé a des locations actives (en tant que propriétaire)
+      const ownedMateriels = await Materiel.find({ proprietaireId: user._id }).select("_id");
+      const ownedIds = ownedMateriels.map((m) => m._id);
+      if (ownedIds.length > 0) {
+        const asOwner = await Location.countDocuments({
+          materielId: { $in: ownedIds },
+          statut: { $in: ACTIVE_LOCATION_STATUTS },
+        });
+        if (asOwner > 0) {
+          return res.status(400).json({
+            message: "Impossible de supprimer le compte : votre matériel a des locations en cours.",
+          });
+        }
+        // Retirer le matériel possédé qui n'est plus engagé
+        await Materiel.deleteMany({ _id: { $in: ownedIds } });
+      }
+
+      await User.findByIdAndDelete(user._id);
+
+      res.json({ message: "Compte supprimé avec succès" });
+    } catch (err) {
+      console.error("deleteAccount error:", err);
+      res.status(500).json({ message: "Erreur serveur" });
+    }
+  },
+];
+
 exports.getUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select("nom photo telephone role");
