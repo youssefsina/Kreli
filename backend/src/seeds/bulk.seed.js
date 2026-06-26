@@ -78,7 +78,6 @@ const PHOTOS = [
   "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80",
 ];
 
-// nom de matériel par catégorie
 const MATERIELS_PAR_CAT = {
   "BTP & Chantier": ["Mini pelle hydraulique", "Bétonnière électrique 300L", "Échafaudage modulaire 8m", "Nacelle télescopique 16m", "Marteau-piqueur thermique", "Plaque vibrante 90kg", "Brouette à moteur", "Coffrage métallique"],
   "Outillage Pro": ["Perforateur SDS Max 1250W", "Compresseur d'air 200L", "Meuleuse d'angle 2200W", "Scie circulaire 1800W", "Poste à souder MIG", "Visseuse à choc 18V", "Découpeuse thermique", "Ponceuse à bande"],
@@ -100,33 +99,69 @@ const ETATS = ["neuf", "bon_etat", "usage"];
 const LOC_STATUTS = ["en_attente", "acceptee", "en_cours", "terminee", "en_retard", "en_litige", "refusee", "annulee"];
 const NOTIF_TYPES = ["reservation", "message", "paiement", "litige", "compte"];
 
+const COMMISSION = 10;
+
 function loc(city) {
   return { type: "Point", coordinates: VILLES[city] || VILLES.Casablanca };
 }
 
-function makeLocation({ materielId, locataireId, prixParJour, caution, statut, commissionTaux }) {
+function makeMateriel(ownerId, categories, idx) {
+  const cat = pick(categories);
+  const baseName = pick(MATERIELS_PAR_CAT[cat.nom]);
+  const ville = pick(VILLE_KEYS);
+  return {
+    nom: `${baseName} ${pick(["Pro", "Plus", "MK2", "Premium", "Compact", ""])}`.trim() + ` #${idx}`,
+    description: pick(DESCRIPTIONS),
+    photos: [{ url: pick(PHOTOS), ordre: 0 }, ...(chance(0.5) ? [{ url: pick(PHOTOS), ordre: 1 }] : [])],
+    prixParJour: between(8, 360) * 5,
+    caution: between(2, 30) * 250,
+    localisation: ville,
+    location: loc(ville),
+    etat: pick(ETATS),
+    disponible: chance(0.6),
+    featured: chance(0.2),
+    proprietaireId: ownerId,
+    categorieId: cat._id,
+    createdAt: daysAgo(between(30, 320)),
+  };
+}
+
+// ageDays = il y a combien de jours la demande a été créée (pilote le graphique mensuel)
+function makeLocation({ materiel, locataireId, statut, ageDays }) {
   const nbJours = between(1, 14);
-  const startOffset = chance(0.6) ? -between(1, 60) : between(1, 30);
-  const dateDebut = startOffset < 0 ? daysAgo(-startOffset) : daysFromNow(startOffset);
+  const created = ageDays != null ? ageDays : between(0, 150);
+  const createdAt = daysAgo(created);
+
+  let dateDebut;
+  if (["en_attente", "acceptee"].includes(statut)) {
+    dateDebut = daysFromNow(between(1, 20));
+  } else if (statut === "en_cours") {
+    dateDebut = daysAgo(between(1, Math.max(2, nbJours - 1)));
+  } else {
+    // terminee / en_retard / en_litige / refusee / annulee : démarrée dans le passé
+    dateDebut = new Date(createdAt);
+    dateDebut.setDate(dateDebut.getDate() + between(1, 3));
+  }
   const dateFinPrevue = new Date(dateDebut);
   dateFinPrevue.setDate(dateFinPrevue.getDate() + nbJours);
-  const montantLocation = prixParJour * nbJours;
-  const commissionMontant = round(montantLocation * (commissionTaux / 100));
+
+  const montantLocation = materiel.prixParJour * nbJours;
+  const commissionMontant = round(montantLocation * (COMMISSION / 100));
   const montantNetProprio = montantLocation - commissionMontant;
   return {
-    materielId,
+    materielId: materiel._id,
     locataireId,
     dateDebut,
     dateFinPrevue,
     statut,
     nbJours,
-    prixParJour,
+    prixParJour: materiel.prixParJour,
     montantLocation,
-    cautionMontant: caution,
-    commissionTaux,
+    cautionMontant: materiel.caution,
+    commissionTaux: COMMISSION,
     commissionMontant,
     montantNetProprio,
-    createdAt: daysAgo(between(0, 90)),
+    createdAt,
   };
 }
 
@@ -140,7 +175,6 @@ async function seed() {
   );
   await Promise.all(models.map((M) => M.deleteMany({})));
 
-  const commissionTaux = 10;
   const commonHash = bcrypt.hashSync("Password@2024", 10);
 
   // ── Admin + commission ──────────────────────────────────────────────────────
@@ -148,40 +182,40 @@ async function seed() {
     nom: "Admin Kreli", email: "admin@kreli.ma", password: bcrypt.hashSync("Admin@2024", 10),
     role: "admin", statut: "actif",
   });
-  await CommissionConfig.create({ taux: commissionTaux, modifiePar: admin._id });
+  await CommissionConfig.create({ taux: COMMISSION, modifiePar: admin._id });
 
-  // ── Comptes démo (mots de passe connus) ─────────────────────────────────────
+  // ── Comptes démo ────────────────────────────────────────────────────────────
   const demoDefs = [
-    { nom: "Karim Alaoui", email: "karim@demo.ma", pass: "Karim@2024", role: "locataire", ville: "Casablanca" },
-    { nom: "Sara Moussaoui", email: "sara@demo.ma", pass: "Sara@2024", role: "proprietaire", ville: "Casablanca" },
-    { nom: "Aya Equipements", email: "aya@kreli.ma", pass: "Proprio@2024", role: "proprietaire", ville: "Rabat" },
-    { nom: "Yassine Chantier", email: "yassine@kreli.ma", pass: "Proprio@2024", role: "proprietaire", ville: "Marrakech" },
+    { key: "karim", nom: "Karim Alaoui", email: "karim@demo.ma", pass: "Karim@2024", role: "locataire", ville: "Casablanca" },
+    { key: "sara", nom: "Sara Moussaoui", email: "sara@demo.ma", pass: "Sara@2024", role: "proprietaire", ville: "Casablanca" },
+    { key: "aya", nom: "Aya Equipements", email: "aya@kreli.ma", pass: "Proprio@2024", role: "proprietaire", ville: "Rabat" },
+    { key: "yassine", nom: "Yassine Chantier", email: "yassine@kreli.ma", pass: "Proprio@2024", role: "proprietaire", ville: "Marrakech" },
   ];
-  const demoUsers = [];
+  const demo = {};
   for (const d of demoDefs) {
-    demoUsers.push(await User.create({
+    demo[d.key] = await User.create({
       nom: d.nom, email: d.email, password: bcrypt.hashSync(d.pass, 10),
       role: d.role, statut: "actif", telephone: `06${between(10000000, 99999999)}`, adresse: d.ville,
-    }));
+    });
   }
+  const demoUsers = Object.values(demo);
 
   // ── ~96 utilisateurs aléatoires ─────────────────────────────────────────────
   const usedEmails = new Set([admin.email, ...demoDefs.map((d) => d.email)]);
   const randomUserDocs = [];
-  let i = 0;
+  let ix = 0;
   while (randomUserDocs.length < 96) {
     const prenom = pick(PRENOMS);
     const nom = pick(NOMS);
-    const email = `${prenom}.${nom}.${i}`.toLowerCase().replace(/\s+/g, "") + "@kreli-demo.ma";
-    i++;
+    const email = `${prenom}.${nom}.${ix}`.toLowerCase().replace(/\s+/g, "") + "@kreli-demo.ma";
+    ix++;
     if (usedEmails.has(email)) continue;
     usedEmails.add(email);
-    const role = pick(["locataire", "locataire", "proprietaire", "proprietaire", "both"]);
     randomUserDocs.push({
       nom: `${prenom} ${nom}`,
       email,
       password: commonHash,
-      role,
+      role: pick(["locataire", "locataire", "proprietaire", "proprietaire", "both"]),
       statut: pick(["actif", "actif", "actif", "actif", "suspendu", "bloque"]),
       telephone: `06${between(10000000, 99999999)}`,
       adresse: pick(VILLE_KEYS),
@@ -191,78 +225,77 @@ async function seed() {
   }
   const randomUsers = await User.insertMany(randomUserDocs);
   const allUsers = [...demoUsers, ...randomUsers];
-  const owners = allUsers.filter((u) => u.role === "proprietaire" || u.role === "both");
   const renters = allUsers.filter((u) => u.role === "locataire" || u.role === "both");
+  const owners = allUsers.filter((u) => u.role === "proprietaire" || u.role === "both");
 
   // ── Catégories ──────────────────────────────────────────────────────────────
   const categories = await Categorie.insertMany(
     Object.keys(MATERIELS_PAR_CAT).map((nom) => ({ nom, image: pick(PHOTOS) }))
   );
 
-  // ── ~100 matériels ──────────────────────────────────────────────────────────
+  // ── Matériels : parc garanti pour les comptes démo + reste aléatoire ─────────
   const materielDocs = [];
-  for (let m = 0; m < 100; m++) {
-    const cat = pick(categories);
-    const baseName = pick(MATERIELS_PAR_CAT[cat.nom]);
-    const ville = pick(VILLE_KEYS);
-    const owner = pick(owners);
-    materielDocs.push({
-      nom: `${baseName} ${pick(["Pro", "Plus", "MK2", "Premium", "Compact", ""])}`.trim() + ` #${m + 1}`,
-      description: pick(DESCRIPTIONS),
-      photos: [{ url: pick(PHOTOS), ordre: 0 }, ...(chance(0.5) ? [{ url: pick(PHOTOS), ordre: 1 }] : [])],
-      prixParJour: between(8, 360) * 5,
-      caution: between(2, 30) * 250,
-      localisation: ville,
-      location: loc(ville),
-      etat: pick(ETATS),
-      disponible: chance(0.7),
-      featured: chance(0.2),
-      proprietaireId: owner._id,
-      categorieId: cat._id,
-      createdAt: daysAgo(between(0, 300)),
-    });
+  let mIdx = 1;
+  const demoParc = [[demo.sara, 22], [demo.aya, 18], [demo.yassine, 18]];
+  for (const [owner, n] of demoParc) {
+    for (let k = 0; k < n; k++) materielDocs.push(makeMateriel(owner._id, categories, mIdx++));
+  }
+  while (materielDocs.length < 170) {
+    materielDocs.push(makeMateriel(pick(owners)._id, categories, mIdx++));
   }
   const materiels = await Materiel.insertMany(materielDocs);
+  const materielsByOwner = (ownerId) => materiels.filter((m) => m.proprietaireId.toString() === ownerId.toString());
 
-  // ── ~120 locations ──────────────────────────────────────────────────────────
+  // ── Locations riches pour les comptes démo (étalées sur 6 mois) ──────────────
   const locationDocs = [];
-  for (let l = 0; l < 120; l++) {
+  const rentersExcept = (ownerId) => renters.filter((r) => r._id.toString() !== ownerId.toString());
+
+  for (const owner of [demo.sara, demo.aya, demo.yassine]) {
+    const mats = materielsByOwner(owner._id);
+    const pool = rentersExcept(owner._id);
+    // Locations terminées réparties sur les 6 derniers mois (revenus + graphique)
+    for (let monthAgo = 5; monthAgo >= 0; monthAgo--) {
+      const count = between(2, 4);
+      for (let c = 0; c < count; c++) {
+        const renter = owner._id.equals(demo.sara._id) && chance(0.4) ? demo.karim : pick(pool);
+        locationDocs.push(makeLocation({ materiel: pick(mats), locataireId: renter._id, statut: "terminee", ageDays: monthAgo * 30 + between(0, 26) }));
+      }
+    }
+    // Activité en cours / à venir
+    for (let c = 0; c < 4; c++) locationDocs.push(makeLocation({ materiel: pick(mats), locataireId: pick(pool)._id, statut: "en_cours", ageDays: between(0, 20) }));
+    for (let c = 0; c < 3; c++) locationDocs.push(makeLocation({ materiel: pick(mats), locataireId: pick(pool)._id, statut: "acceptee", ageDays: between(0, 10) }));
+    for (let c = 0; c < 4; c++) locationDocs.push(makeLocation({ materiel: pick(mats), locataireId: pick(pool)._id, statut: "en_attente", ageDays: between(0, 6) }));
+    for (let c = 0; c < 2; c++) locationDocs.push(makeLocation({ materiel: pick(mats), locataireId: pick(pool)._id, statut: pick(["refusee", "annulee", "en_litige"]), ageDays: between(0, 60) }));
+  }
+
+  // Karim (locataire démo) : beaucoup de locations en tant que locataire
+  const matsNotKarim = materiels.filter((m) => m.proprietaireId.toString() !== demo.karim._id.toString());
+  for (let c = 0; c < 18; c++) {
+    locationDocs.push(makeLocation({ materiel: pick(matsNotKarim), locataireId: demo.karim._id, statut: pick(["terminee", "terminee", "en_cours", "acceptee", "en_attente", "refusee"]), ageDays: between(0, 170) }));
+  }
+
+  // ── Locations aléatoires (volume global) ────────────────────────────────────
+  for (let l = 0; l < 320; l++) {
     const mat = pick(materiels);
-    const eligibleRenters = renters.filter((r) => r._id.toString() !== mat.proprietaireId.toString());
-    if (eligibleRenters.length === 0) continue;
-    const renter = pick(eligibleRenters);
-    locationDocs.push(
-      makeLocation({
-        materielId: mat._id,
-        locataireId: renter._id,
-        prixParJour: mat.prixParJour,
-        caution: mat.caution,
-        statut: pick(LOC_STATUTS),
-        commissionTaux,
-      })
-    );
+    const pool = rentersExcept(mat.proprietaireId);
+    if (!pool.length) continue;
+    locationDocs.push(makeLocation({ materiel: mat, locataireId: pick(pool)._id, statut: pick(LOC_STATUTS) }));
   }
   const locations = await Location.insertMany(locationDocs);
 
-  // ── Paiements (location + caution par location) ─────────────────────────────
+  // ── Paiements ───────────────────────────────────────────────────────────────
   const paiementDocs = [];
   for (const lc of locations) {
     const paid = ["acceptee", "en_cours", "terminee", "en_retard", "en_litige"].includes(lc.statut);
-    paiementDocs.push({
-      locationId: lc._id, type: "location", montant: lc.montantLocation,
-      statut: paid ? "paye" : pick(["en_attente", "annule"]),
-    });
-    paiementDocs.push({
-      locationId: lc._id, type: "caution", montant: lc.cautionMontant,
-      statut: lc.statut === "terminee" ? "rembourse" : paid ? "paye" : "en_attente",
-    });
-    if (lc.statut === "terminee" && chance(0.3)) {
+    paiementDocs.push({ locationId: lc._id, type: "location", montant: lc.montantLocation, statut: paid ? "paye" : pick(["en_attente", "annule"]) });
+    paiementDocs.push({ locationId: lc._id, type: "caution", montant: lc.cautionMontant, statut: lc.statut === "terminee" ? "rembourse" : paid ? "paye" : "en_attente" });
+    if (lc.statut === "terminee" && chance(0.25)) {
       paiementDocs.push({ locationId: lc._id, type: "penalite", montant: between(1, 8) * 100, statut: "retenu" });
     }
   }
   await Paiement.insertMany(paiementDocs);
 
-  // ── Conversations + messages (~70 conversations) ────────────────────────────
+  // ── Conversations + messages ────────────────────────────────────────────────
   const sampleMsgs = [
     "Bonjour, est-ce que le matériel est toujours disponible ?",
     "Oui, il est disponible pour vos dates. La livraison est possible.",
@@ -275,42 +308,42 @@ async function seed() {
   ];
   const convDocs = [];
   const usedPairs = new Set();
-  for (let c = 0; c < 70; c++) {
+  // Conversations garanties impliquant les comptes démo (matériels distincts)
+  for (const mat of pickN(materielsByOwner(demo.sara._id), 10)) {
+    const key = `${mat._id}-${demo.karim._id}`;
+    if (usedPairs.has(key)) continue;
+    usedPairs.add(key);
+    convDocs.push({ materielId: mat._id, locataireId: demo.karim._id, proprietaireId: demo.sara._id, dernierMsgAt: daysAgo(between(0, 8)), createdAt: daysAgo(between(2, 30)) });
+  }
+  for (let c = 0; c < 80; c++) {
     const mat = pick(materiels);
-    const eligible = renters.filter((r) => r._id.toString() !== mat.proprietaireId.toString());
-    if (!eligible.length) continue;
-    const renter = pick(eligible);
+    const pool = rentersExcept(mat.proprietaireId);
+    if (!pool.length) continue;
+    const renter = pick(pool);
     const key = `${mat._id}-${renter._id}`;
     if (usedPairs.has(key)) continue;
     usedPairs.add(key);
-    convDocs.push({
-      materielId: mat._id,
-      locataireId: renter._id,
-      proprietaireId: mat.proprietaireId,
-      dernierMsgAt: daysAgo(between(0, 20)),
-      createdAt: daysAgo(between(5, 40)),
-      _renter: renter._id,
-    });
+    convDocs.push({ materielId: mat._id, locataireId: renter._id, proprietaireId: mat.proprietaireId, dernierMsgAt: daysAgo(between(0, 20)), createdAt: daysAgo(between(5, 40)) });
   }
-  const conversations = await Conversation.insertMany(convDocs.map(({ _renter, ...rest }) => rest));
+  const conversations = await Conversation.insertMany(convDocs);
 
   const messageDocs = [];
-  conversations.forEach((conv, idx) => {
+  for (const conv of conversations) {
     const participants = [conv.locataireId, conv.proprietaireId];
-    const count = between(2, 6);
+    const count = between(2, 7);
     for (let m = 0; m < count; m++) {
       messageDocs.push({
         conversationId: conv._id,
         expediteurId: participants[m % 2],
         contenu: sampleMsgs[m % sampleMsgs.length],
-        lu: chance(0.7),
+        lu: chance(0.65),
         createdAt: daysAgo(between(0, 30)),
       });
     }
-  });
+  }
   await Message.insertMany(messageDocs);
 
-  // ── Notifications (~150) ────────────────────────────────────────────────────
+  // ── Notifications ───────────────────────────────────────────────────────────
   const notifTitles = {
     reservation: ["Nouvelle demande de location", "Demande acceptée !", "Réservation confirmée"],
     message: ["Nouveau message"],
@@ -319,24 +352,22 @@ async function seed() {
     compte: ["Bienvenue sur Kreli", "Mise à jour de votre compte"],
   };
   const notifDocs = [];
-  for (let n = 0; n < 150; n++) {
-    const dest = pick(allUsers);
+  // Notifications garanties pour les comptes démo
+  for (const u of demoUsers) {
+    for (let n = 0; n < 6; n++) {
+      const type = pick(NOTIF_TYPES);
+      notifDocs.push({ destinataireId: u._id, type, titre: pick(notifTitles[type]), contenu: "Vous avez une nouvelle activité sur votre compte Kreli.", lu: chance(0.4), lienRedirection: "/dashboard", createdAt: daysAgo(between(0, 25)) });
+    }
+  }
+  for (let n = 0; n < 200; n++) {
     const type = pick(NOTIF_TYPES);
-    notifDocs.push({
-      destinataireId: dest._id,
-      type,
-      titre: pick(notifTitles[type]),
-      contenu: "Vous avez une nouvelle activité sur votre compte Kreli.",
-      lu: chance(0.5),
-      lienRedirection: "/dashboard",
-      createdAt: daysAgo(between(0, 29)),
-    });
+    notifDocs.push({ destinataireId: pick(allUsers)._id, type, titre: pick(notifTitles[type]), contenu: "Vous avez une nouvelle activité sur votre compte Kreli.", lu: chance(0.5), lienRedirection: "/dashboard", createdAt: daysAgo(between(0, 29)) });
   }
   await Notification.insertMany(notifDocs);
 
-  // ── Litiges (~25, sur locations en litige / terminées) ──────────────────────
+  // ── Litiges ─────────────────────────────────────────────────────────────────
   const litigeable = locations.filter((l) => ["en_litige", "terminee", "en_retard"].includes(l.statut));
-  const litigeDocs = pickN(litigeable, Math.min(25, litigeable.length)).map((lc) => {
+  const litigeDocs = pickN(litigeable, Math.min(30, litigeable.length)).map((lc) => {
     const statut = pick(["ouvert", "en_cours", "cloture"]);
     return {
       locationId: lc._id,
@@ -368,8 +399,10 @@ async function seed() {
     notifications: await Notification.countDocuments(),
     litiges: await Litige.countDocuments(),
   };
+  const saraTerminees = await Location.countDocuments({ statut: "terminee" });
   console.log("\n✅  Seed massif terminé !");
   console.table(counts);
+  console.log(`   Sara possède ${materielsByOwner(demo.sara._id).length} matériels · ${saraTerminees} locations terminées au total`);
   console.log("\n  🔑  Comptes démo :");
   console.log("      Locataire    → karim@demo.ma   / Karim@2024");
   console.log("      Propriétaire → sara@demo.ma    / Sara@2024");
