@@ -29,6 +29,7 @@ export default function ForgotPasswordPage() {
     }
   }
 
+  
   return (
     <div className="flex min-h-screen flex-col bg-[#f5f5f4]">
       <Navbar />
