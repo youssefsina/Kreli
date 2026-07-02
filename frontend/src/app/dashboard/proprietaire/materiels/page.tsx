@@ -121,7 +121,8 @@ export default function MesMaterielsPage() {
                 <>
                   <div className="relative h-40 bg-slate-100">
                     <Image src={imgSrc(m)} alt={m.nom} fill className="object-cover"
-                      sizes="(max-width:640px) 100vw,(max-width:1024px) 50vw,25vw" />
+                      sizes="(max-width:640px) 100vw,(max-width:1024px) 50vw,25vw"
+                      onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = '/placeholder.jpg' }} />
                     <span
                       className="absolute right-2.5 top-2.5 rounded-lg px-2 py-0.5 text-[10px] font-bold"
                       style={m.disponible ? { background: '#F0FDF4', color: '#16A34A' } : { background: '#FFF7ED', color: '#EA580C' }}
@@ -163,7 +164,8 @@ export default function MesMaterielsPage() {
               ) : (
                 <>
                   <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-slate-100">
-                    <Image src={imgSrc(m)} alt={m.nom} fill className="object-cover" sizes="80px" />
+                    <Image src={imgSrc(m)} alt={m.nom} fill className="object-cover" sizes="80px"
+                      onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = '/placeholder.jpg' }} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <h3 className="truncate text-sm font-bold text-[#0F172A]">{m.nom}</h3>

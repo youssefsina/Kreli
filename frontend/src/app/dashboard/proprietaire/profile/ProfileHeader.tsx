@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef } from "react";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { Camera, CheckCircle, Calendar } from "lucide-react";
 
@@ -48,7 +47,13 @@ export function ProfileHeader({
               style={{ background: "#F97316" }}
             >
               {photo ? (
-                <Image src={photo} alt={nom ?? ""} fill className="object-cover" />
+                <img
+                  src={photo}
+                  alt={nom ?? ""}
+                  referrerPolicy="no-referrer"
+                  className="h-full w-full object-cover"
+                  onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/avatar-placeholder.svg"; }}
+                />
               ) : (
                 initials
               )}

@@ -1,20 +1,13 @@
 "use client";
 
-import { useRef } from "react";
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
 import { MapPin, Mail, ArrowRight, CheckCircle } from "lucide-react";
 import { useI18n } from "@/context/I18nContext";
 import { AboutValues } from "./AboutValues";
 import { AboutTeam } from "./AboutTeam";
 
-gsap.registerPlugin(ScrollTrigger, useGSAP);
-
 export default function AboutClient() {
   const { t } = useI18n();
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const STATS = [
     { value: "5 000+", label: t("about.stat_refs") },
@@ -30,47 +23,8 @@ export default function AboutClient() {
     t("about.step4"),
   ];
 
-  useGSAP(
-    () => {
-      const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap
-          .timeline({ defaults: { ease: "power3.out" } })
-          .from(".ab-hero-title", { y: 60, opacity: 0, duration: 1 })
-          .from(".ab-hero-body", { y: 30, opacity: 0, duration: 0.8 }, "-=0.55")
-          .from(".ab-hero-cta", { y: 20, opacity: 0, duration: 0.6 }, "-=0.4");
-
-        ScrollTrigger.batch(".ab-stat", {
-          onEnter: (els) => gsap.fromTo(els, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.75, stagger: 0.1, ease: "power3.out" }),
-          start: "top 88%", once: true,
-        });
-
-        ScrollTrigger.batch(".ab-value-card", {
-          onEnter: (els) => gsap.fromTo(els, { y: 56, opacity: 0, scale: 0.97 }, { y: 0, opacity: 1, scale: 1, duration: 0.8, stagger: 0.12, ease: "power3.out", clearProps: "transform,opacity" }),
-          start: "top 88%", once: true,
-        });
-
-        gsap.utils.toArray<HTMLElement>(".ab-heading").forEach((el) => {
-          gsap.from(el, { y: 40, opacity: 0, duration: 0.85, ease: "power3.out", scrollTrigger: { trigger: el, start: "top 88%", once: true } });
-        });
-
-        ScrollTrigger.batch(".ab-team-card", {
-          onEnter: (els) => gsap.fromTo(els, { y: 48, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, stagger: 0.12, ease: "power3.out" }),
-          start: "top 88%", once: true,
-        });
-
-        ScrollTrigger.batch(".ab-how-item", {
-          onEnter: (els) => gsap.fromTo(els, { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, stagger: 0.1, ease: "power3.out" }),
-          start: "top 88%", once: true,
-        });
-      });
-      return () => mm.revert();
-    },
-    { scope: containerRef }
-  );
-
   return (
-    <div ref={containerRef} className="bg-[#f5f5f4]" style={{ color: "var(--lm-ink)" }}>
+    <div className="bg-[#f5f5f4]" style={{ color: "var(--lm-ink)" }}>
 
       
       <section style={{ background: "var(--lm-surface-inverted)", position: "relative", overflow: "hidden" }}>

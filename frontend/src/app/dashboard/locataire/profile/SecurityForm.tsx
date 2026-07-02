@@ -4,8 +4,10 @@ import { useState } from "react";
 import { changePassword } from "@/lib/api";
 import { Shield, Eye, EyeOff, Lock } from "lucide-react";
 import { DashCard, Alert, FormField, DashInput } from "@/components/dashboard/DashboardUI";
+import { useI18n } from "@/context/I18nContext";
 
 export function SecurityForm() {
+  const { t } = useI18n();
   const [pwForm, setPwForm] = useState({ current: "", next: "", confirm: "" });
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNext, setShowNext] = useState(false);
@@ -16,7 +18,7 @@ export function SecurityForm() {
   async function handlePasswordChange(e: React.FormEvent) {
     e.preventDefault();
     if (pwForm.next !== pwForm.confirm) {
-      setPwError("Les mots de passe ne correspondent pas");
+      setPwError(t("auth.err_passwords_mismatch"));
       return;
     }
     setPwSaving(true);
@@ -28,7 +30,7 @@ export function SecurityForm() {
       setPwForm({ current: "", next: "", confirm: "" });
       setTimeout(() => setPwSuccess(false), 4000);
     } catch (err) {
-      setPwError(err instanceof Error ? err.message : "Erreur");
+      setPwError(err instanceof Error ? err.message : t("common.error_label"));
     } finally {
       setPwSaving(false);
     }
@@ -41,23 +43,23 @@ export function SecurityForm() {
           <Shield className="h-4 w-4 text-slate-500" />
         </div>
         <div>
-          <h2 className="font-bold text-[#0F172A]">Sécurité</h2>
-          <p className="text-xs text-slate-400">Modifiez votre mot de passe</p>
+          <h2 className="font-bold text-[#0F172A]">{t("auth.security_title")}</h2>
+          <p className="text-xs text-slate-400">{t("auth.security_subtitle")}</p>
         </div>
       </div>
 
-      {pwSuccess && <div className="mb-5"><Alert type="success">Mot de passe mis à jour !</Alert></div>}
+      {pwSuccess && <div className="mb-5"><Alert type="success">{t("auth.reset_done_title")}</Alert></div>}
       {pwError && <div className="mb-5"><Alert type="error">{pwError}</Alert></div>}
 
       <form onSubmit={handlePasswordChange} className="space-y-4">
-        <FormField label="Mot de passe actuel">
+        <FormField label={t("auth.current_password")}>
           <DashInput
             icon={Lock}
             type={showCurrent ? "text" : "password"}
             required
             value={pwForm.current}
             onChange={(e) => setPwForm({ ...pwForm, current: e.target.value })}
-            placeholder="••••••••"
+            placeholder={t("auth.password_placeholder")}
             suffix={
               <button type="button" onClick={() => setShowCurrent(!showCurrent)} tabIndex={-1}>
                 {showCurrent ? <EyeOff className="h-4 w-4 text-slate-400" /> : <Eye className="h-4 w-4 text-slate-400" />}
@@ -66,14 +68,14 @@ export function SecurityForm() {
           />
         </FormField>
 
-        <FormField label="Nouveau mot de passe">
+        <FormField label={t("auth.new_password")}>
           <DashInput
             icon={Lock}
             type={showNext ? "text" : "password"}
             required
             value={pwForm.next}
             onChange={(e) => setPwForm({ ...pwForm, next: e.target.value })}
-            placeholder="Min. 8 car., 1 majuscule, 1 chiffre"
+            placeholder={t("auth.password_rules")}
             suffix={
               <button type="button" onClick={() => setShowNext(!showNext)} tabIndex={-1}>
                 {showNext ? <EyeOff className="h-4 w-4 text-slate-400" /> : <Eye className="h-4 w-4 text-slate-400" />}
@@ -82,14 +84,14 @@ export function SecurityForm() {
           />
         </FormField>
 
-        <FormField label="Confirmer le mot de passe">
+        <FormField label={t("auth.confirm_new_password")}>
           <DashInput
             icon={Lock}
             type="password"
             required
             value={pwForm.confirm}
             onChange={(e) => setPwForm({ ...pwForm, confirm: e.target.value })}
-            placeholder="••••••••"
+            placeholder={t("auth.password_placeholder")}
           />
         </FormField>
 
@@ -100,9 +102,9 @@ export function SecurityForm() {
           style={{ background: "#0F172A" }}
         >
           {pwSaving ? (
-            <><span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />Mise à jour…</>
+            <><span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />{t("auth.resetting")}</>
           ) : (
-            <><Lock className="h-3.5 w-3.5" />Mettre à jour le mot de passe</>
+            <><Lock className="h-3.5 w-3.5" />{t("auth.update_password_button")}</>
           )}
         </button>
       </form>

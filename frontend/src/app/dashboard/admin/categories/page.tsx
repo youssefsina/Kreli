@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { getCategories, createCategory, updateCategory, deleteCategory, type Category } from "@/lib/api";
 import { Plus } from "lucide-react";
 import { DashCard, Alert, DashInput } from "@/components/dashboard/DashboardUI";
+import { useI18n } from "@/context/I18nContext";
 
 const STAGGER = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } };
 const ITEM = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
@@ -14,6 +15,7 @@ const GRID_COLS = "minmax(0,1fr) minmax(0,2fr) 170px";
 function Modal({ title, onClose, onSubmit, loading, children }: {
   title: string; onClose: () => void; onSubmit: () => void; loading: boolean; children: React.ReactNode;
 }) {
+  const { t } = useI18n();
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-6"
@@ -33,7 +35,7 @@ function Modal({ title, onClose, onSubmit, loading, children }: {
             className="flex-1 rounded-xl border bg-white py-3 text-sm font-semibold text-slate-500 transition hover:bg-slate-50"
             style={{ borderColor: "#E2E8F0" }}
           >
-            Annuler
+            {t("common.cancel")}
           </button>
           <button
             onClick={onSubmit}
@@ -41,7 +43,7 @@ function Modal({ title, onClose, onSubmit, loading, children }: {
             className="flex-1 rounded-xl py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-60"
             style={{ background: "#F97316" }}
           >
-            {loading ? "En cours…" : "Confirmer"}
+            {loading ? t("auth.sending") : t("common.confirm")}
           </button>
         </div>
       </div>
@@ -50,6 +52,7 @@ function Modal({ title, onClose, onSubmit, loading, children }: {
 }
 
 export default function AdminCategoriesPage() {
+  const { t } = useI18n();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -105,7 +108,7 @@ export default function AdminCategoriesPage() {
         <motion.div variants={STAGGER} initial="hidden" animate="show" className="space-y-5">
           <motion.div variants={ITEM} className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-black text-[#0F172A] lg:text-3xl">Catégories</h1>
+              <h1 className="text-2xl font-black text-[#0F172A] lg:text-3xl">{t("nav.categories")}</h1>
               <p className="mt-1 text-sm text-slate-400">{categories.length} catégorie{categories.length !== 1 ? "s" : ""}</p>
             </div>
             <button

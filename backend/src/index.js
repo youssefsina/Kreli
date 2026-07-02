@@ -22,6 +22,7 @@ const usersRouter = require("./routes/users.routes");
 const conversationsRouter = require("./routes/conversations.routes");
 const notificationsRouter = require("./routes/notifications.routes");
 const paiementsRouter = require("./routes/paiements.routes");
+const commissionRouter = require("./routes/commission.routes");
 const litigesRouter = require("./routes/litiges.routes");
 const uploadRouter = require("./routes/upload.routes");
 
@@ -98,6 +99,7 @@ app.use("/api/v1/users", usersRouter);
 app.use("/api/v1/conversations", conversationsRouter);
 app.use("/api/v1/notifications", notificationsRouter);
 app.use("/api/v1/paiements", paiementsRouter);
+app.use("/api/v1/commission", commissionRouter);
 app.use("/api/v1/litiges", litigesRouter);
 app.use("/api/v1/upload", uploadRouter);
 

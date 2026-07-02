@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useI18n } from "@/context/I18nContext";
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import AdminSidebar from "@/components/dashboard/AdminSidebar";
@@ -10,6 +11,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -56,7 +58,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <button
             onClick={() => setMobileOpen(true)}
             className="grid h-9 w-9 place-items-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100"
-            aria-label="Menu"
+            aria-label={t("nav.menu")}
           >
             <Menu className="h-5 w-5" strokeWidth={1.75} />
           </button>

@@ -9,6 +9,7 @@ import {
 } from "@/lib/api";
 import { DashCard, Alert, StatusPill, Pagination } from "@/components/dashboard/DashboardUI";
 import { formatShortDate } from "@/lib/format";
+import { CommissionCard } from "./CommissionCard";
 
 const STAGGER = { hidden: {}, show: { transition: { staggerChildren: 0.04 } } };
 const ITEM = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.28 } } };
@@ -97,6 +98,10 @@ function AdminPaiementsContent() {
               <option value="annulation">Annulation</option>
             </select>
           </div>
+        </motion.div>
+
+        <motion.div variants={ITEM}>
+          <CommissionCard />
         </motion.div>
 
         {error && <motion.div variants={ITEM}><Alert type="error">{error}</Alert></motion.div>}
