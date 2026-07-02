@@ -8,6 +8,7 @@ import {
   Wallet, Users, Package, Inbox, Tag, DollarSign, AlertTriangle, ArrowRight,
 } from "lucide-react";
 import { StatCard } from "@/components/dashboard/DashboardUI";
+import { useI18n } from "@/context/I18nContext";
 
 const STAGGER = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
 const ITEM = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.35 } } };
@@ -29,6 +30,7 @@ const QUICK_LINKS = [
 ];
 
 export default function AdminDashboardPage() {
+  const { t } = useI18n();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [litigesOuverts, setLitigesOuverts] = useState(0);
   const [paiementsEnAttente, setPaiementsEnAttente] = useState(0);
@@ -85,7 +87,7 @@ export default function AdminDashboardPage() {
       <motion.div variants={STAGGER} initial="hidden" animate="show" className="space-y-5">
 
         <motion.div variants={ITEM}>
-          <h1 className="text-2xl font-black text-[#0F172A] lg:text-3xl">Administration</h1>
+          <h1 className="text-2xl font-black text-[#0F172A] lg:text-3xl">{t("dashboard.administration")}</h1>
           <p className="mt-1 text-sm capitalize text-slate-400">{dateLabel}</p>
         </motion.div>
 

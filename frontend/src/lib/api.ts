@@ -810,6 +810,26 @@ export async function getAdminPaiementsStats(): Promise<{
   return body.data;
 }
 
+export async function getCommission(): Promise<{ taux: number }> {
+  const response = await fetch(`${API_BASE_URL}/commission`, {
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+  const body = await response.json();
+  if (!response.ok) throw new Error(body.message ?? "Erreur");
+  return body.data;
+}
+
+export async function updateCommission(taux: number): Promise<{ taux: number; createdAt: string }> {
+  const response = await fetch(`${API_BASE_URL}/commission`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+    body: JSON.stringify({ taux }),
+  });
+  const body = await response.json();
+  if (!response.ok) throw new Error(body.message ?? "Erreur");
+  return body.data;
+}
+
 
 export type Litige = {
   _id: string;

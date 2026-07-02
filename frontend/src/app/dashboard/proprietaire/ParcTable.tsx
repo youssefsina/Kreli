@@ -5,6 +5,7 @@ import Image from "next/image";
 import { getMaterielImage } from "@/lib/api";
 import { Package, Plus, ArrowRight } from "lucide-react";
 import { DashCard } from "@/components/dashboard/DashboardUI";
+import { useI18n } from "@/context/I18nContext";
 
 type ParcMateriel = {
   _id: string;
@@ -29,6 +30,7 @@ export function ParcTable({
   disponibles: number;
   enLocation: number;
 }) {
+  const { t } = useI18n();
   return (
     <DashCard noPad>
       <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid #F1F5F9" }}>
@@ -58,7 +60,7 @@ export function ParcTable({
             style={{ background: "#F97316" }}
           >
             <Plus className="h-4 w-4" strokeWidth={2.5} />
-            Ajouter un matériel
+            {t("dashboard.add_materiel")}
           </Link>
         </div>
       ) : (
@@ -69,11 +71,11 @@ export function ParcTable({
             style={{ gridTemplateColumns: TABLE_COLS, borderBottom: "1px solid #F1F5F9", background: "#FAFAFA" }}
           >
             <span />
-            <span>Matériel</span>
-            <span>Localisation</span>
-            <span>Prix / j</span>
-            <span>Statut</span>
-            <span className="text-right">Action</span>
+            <span>{t("table.materiel")}</span>
+            <span>{t("catalogue.location_label")}</span>
+            <span>{t("table.price_day")}</span>
+            <span>{t("table.status")}</span>
+            <span className="text-right">{t("table.action")}</span>
           </div>
 
           {materiels.map((m, i) => {

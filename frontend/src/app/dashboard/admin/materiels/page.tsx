@@ -10,6 +10,7 @@ import {
 } from "@/lib/api";
 import { Package, Star, Trash2 } from "lucide-react";
 import { DashCard, Alert, Pagination } from "@/components/dashboard/DashboardUI";
+import { useI18n } from "@/context/I18nContext";
 
 const STAGGER = { hidden: {}, show: { transition: { staggerChildren: 0.04 } } };
 const ITEM = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.28 } } };
@@ -23,6 +24,7 @@ const ETAT_CHIP: Record<string, { bg: string; color: string }> = {
 };
 
 function AdminMaterielsContent() {
+  const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [materiels, setMateriels] = useState<Materiel[]>([]);
@@ -79,7 +81,7 @@ function AdminMaterielsContent() {
     <div className="p-6 lg:p-8">
       <motion.div variants={STAGGER} initial="hidden" animate="show" className="space-y-5">
         <motion.div variants={ITEM}>
-          <h1 className="text-2xl font-black text-[#0F172A] lg:text-3xl">Matériels</h1>
+          <h1 className="text-2xl font-black text-[#0F172A] lg:text-3xl">{t("dashboard.materials_admin")}</h1>
           <p className="mt-1 text-sm text-slate-400">{pagination.total} équipements listés</p>
         </motion.div>
 
@@ -91,8 +93,8 @@ function AdminMaterielsContent() {
               className="hidden items-center gap-3 px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-[#94A3B8] md:grid"
               style={{ gridTemplateColumns: GRID_COLS, borderBottom: "1px solid #F1F5F9", background: "#FAFAFA" }}
             >
-              <span>Matériel</span><span>Catégorie</span><span>Prix/j</span><span>État</span><span>Vedette</span>
-              <span className="text-right">Actions</span>
+              <span>{t("table.materiel")}</span><span>{t("catalogue.category")}</span><span>{t("table.price_day")}</span><span>{t("table.state")}</span><span>{t("table.featured")}</span>
+              <span className="text-right">{t("table.action")}</span>
             </div>
 
             {loading ? (

@@ -5,6 +5,7 @@ import { CreditCard, FileText, ChevronLeft, ChevronRight } from "lucide-react";
 import { formatPrice } from "@/lib/api";
 import { StatusPill } from "@/components/dashboard/DashboardUI";
 import type { PayRow } from "@/lib/pdf";
+import { useI18n } from "@/context/I18nContext";
 
 const STAGGER = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } };
 const ITEM = { hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0, transition: { duration: 0.25 } } };
@@ -28,6 +29,7 @@ export function TransactionsTable({
   onPageChange: (page: number) => void;
   onExportRow: (row: PayRow) => void;
 }) {
+  const { t } = useI18n();
   if (totalCount === 0) {
     return (
       <div className="py-20 text-center">
@@ -49,12 +51,12 @@ export function TransactionsTable({
         className="grid gap-4 px-6 py-3 text-[11px] font-bold uppercase tracking-widest text-[#94A3B8]"
         style={{ gridTemplateColumns: COLS, borderBottom: "1px solid #F1F5F9", background: "#FAFAFA" }}
       >
-        <span>Date</span>
-        <span>Matériel</span>
-        <span className="text-right">Montant</span>
-        <span className="text-right">Caution</span>
-        <span className="text-center">Statut</span>
-        <span className="text-center">Action</span>
+        <span>{t("table.date")}</span>
+        <span>{t("table.materiel")}</span>
+        <span className="text-right">{t("table.amount")}</span>
+        <span className="text-right">{t("catalogue.deposit_label")}</span>
+        <span className="text-center">{t("table.status")}</span>
+        <span className="text-center">{t("table.action")}</span>
       </div>
 
       <motion.div variants={STAGGER} initial="hidden" animate="show">

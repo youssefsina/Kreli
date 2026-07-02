@@ -89,15 +89,24 @@ exports.updateLitigeStatus = async (req, res) => {
 
     if (!litige) return res.status(404).json({ message: "Litige non trouvé" });
 
-    
+
     if (statut === "cloture" && decisionAdmin) {
-      await Notification.create({
+      const location = litige.locationId;
+      const isLocataire = location?.locataireId?._id?.toString() === litige.ouvertPar._id.toString();
+      const dashboardPrefix = isLocataire ? "/dashboard/locataire" : "/dashboard/proprietaire";
+      const lienRedirection = location
+        ? `${dashboardPrefix}/locations?statut=${location.statut}`
+        : null;
+
+      const notification = await Notification.create({
         destinataireId: litige.ouvertPar._id,
         type: "litige",
         titre: "Décision sur votre litige",
         contenu: decisionAdmin.slice(0, 120),
-        lienRedirection: null,
+        lienRedirection,
       });
+
+      req.app.get("io").to(litige.ouvertPar._id.toString()).emit("new_notification", { notification });
     }
 
     res.json({ message: "Litige mis à jour", data: litige });

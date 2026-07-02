@@ -54,7 +54,7 @@ export function LocationRow({
       variants={ITEM}
       initial="hidden"
       animate="show"
-      className="group grid grid-cols-[56px_minmax(0,1fr)_200px_120px_160px] items-center gap-4 px-5 py-4 transition-colors last:border-0"
+      className="group grid min-w-[840px] grid-cols-[56px_minmax(0,1fr)_200px_120px_220px] items-center gap-4 px-5 py-4 transition-colors last:border-0"
       style={{ borderBottom: "1px solid #F8FAFC" }}
       onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "#FAFAFA"; }}
       onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
@@ -104,12 +104,12 @@ export function LocationRow({
         <p className="mt-1.5 text-sm font-bold text-[#F97316]">{formatPrice(loc.montantLocation)}</p>
       </div>
 
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-2">
         {canReturn && (
           <button
             onClick={() => onReturn(loc._id)}
             disabled={isLoading}
-            className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-white transition-all disabled:opacity-60 hover:opacity-90"
+            className="flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-xs font-bold text-white transition-all disabled:opacity-60 hover:opacity-90"
             style={{ background: "#0F172A" }}
           >
             {isLoading ? (
@@ -124,7 +124,7 @@ export function LocationRow({
           <button
             onClick={() => onCancel(loc._id)}
             disabled={isLoading}
-            className="flex items-center gap-1.5 rounded-xl border border-red-200 px-3 py-2 text-xs font-semibold text-red-500 transition-all hover:bg-red-50 disabled:opacity-60"
+            className="flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-red-200 px-3 text-xs font-semibold text-red-500 transition-all hover:bg-red-50 disabled:opacity-60"
           >
             <X className="h-3.5 w-3.5" />
             Annuler
@@ -134,7 +134,7 @@ export function LocationRow({
           <button
             onClick={() => onLitige(loc._id)}
             disabled={isLoading}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-200 text-amber-500 transition-all hover:bg-amber-50 disabled:opacity-60"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-amber-200 text-amber-500 transition-all hover:bg-amber-50 disabled:opacity-60"
             title="Ouvrir un litige"
           >
             <Flag className="h-4 w-4" />
@@ -142,7 +142,7 @@ export function LocationRow({
         )}
         <Link
           href={`/materiel/${loc.materielId._id}`}
-          className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-400 transition-all hover:border-slate-300 hover:text-[#0F172A]"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-400 transition-all hover:border-slate-300 hover:text-[#0F172A]"
         >
           <Eye className="h-4 w-4" />
         </Link>

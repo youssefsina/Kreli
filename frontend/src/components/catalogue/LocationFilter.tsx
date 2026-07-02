@@ -240,7 +240,7 @@ export default function LocationFilter({ ville, rayon, lat, lng, onApply }: Loca
               type="button"
               onClick={() => setOpen(false)}
               className="flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-slate-100"
-              aria-label="Fermer"
+              aria-label={t("nav.close")}
             >
               <X className="h-4 w-4" style={{ color: "#64748b" }} />
             </button>

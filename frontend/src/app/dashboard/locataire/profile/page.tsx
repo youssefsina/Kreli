@@ -10,11 +10,13 @@ import { formatMonthYear } from "@/lib/format";
 import { ProfileHeader } from "./ProfileHeader";
 import { SecurityForm } from "./SecurityForm";
 import { DeleteAccountCard } from "@/components/dashboard/DeleteAccountCard";
+import { useI18n } from "@/context/I18nContext";
 
 const STAGGER = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 const ITEM = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.35 } } };
 
 export default function LocataireProfilePage() {
+  const { t } = useI18n();
   const { user, isLoading: authLoading, updateUser } = useAuth();
   const [profile, setProfile] = useState<AuthUser | null>(null);
   const [stats, setStats] = useState<{ locations: { total: number }; totalDepenses: number } | null>(null);
@@ -49,7 +51,7 @@ export default function LocataireProfilePage() {
       setSuccess(true);
       setTimeout(() => setSuccess(false), 4000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur de mise à jour");
+      setError(err instanceof Error ? err.message : t("auth.err_profile_update"));
     } finally {
       setSaving(false);
     }
@@ -72,10 +74,10 @@ export default function LocataireProfilePage() {
 
   const roleBadge =
     profile?.role === "both"
-      ? "Locataire & Propriétaire"
+      ? t("dashboard.tenant_owner_badge")
       : profile?.role === "locataire"
-      ? "Locataire"
-      : "Propriétaire";
+      ? t("auth.role_locataire")
+      : t("auth.role_proprietaire");
 
   const memberSince = profile?.createdAt ? formatMonthYear(profile.createdAt) : "—";
 
@@ -102,12 +104,12 @@ export default function LocataireProfilePage() {
       {stats && (
         <motion.div variants={STAGGER} initial="hidden" animate="show" className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <motion.div variants={ITEM}>
-            <StatChip icon={Package} label="Locations totales" value={String(stats.locations.total)} color="#F97316" bg="#FFF7ED" />
+            <StatChip icon={Package} label={t("dashboard.total_rentals")} value={String(stats.locations.total)} color="#F97316" bg="#FFF7ED" />
           </motion.div>
           <motion.div variants={ITEM}>
             <StatChip
               icon={Wallet}
-              label="Total dépensé"
+              label={t("dashboard.total_spent")}
               value={`${new Intl.NumberFormat("fr-MA", { maximumFractionDigits: 0 }).format(stats.totalDepenses)} MAD`}
               color="#F97316"
               bg="#FFF7ED"
@@ -116,8 +118,8 @@ export default function LocataireProfilePage() {
           <motion.div variants={ITEM} className="col-span-2 sm:col-span-1">
             <StatChip
               icon={Shield}
-              label="Statut du compte"
-              value={profile?.statut === "actif" ? "Actif" : "Inactif"}
+              label={t("dashboard.account_status")}
+              value={profile?.statut === "actif" ? t("common.active") : t("common.inactive")}
               color="#22C55E"
               bg="#F0FDF4"
             />
@@ -132,31 +134,31 @@ export default function LocataireProfilePage() {
               <User className="h-4 w-4 text-slate-500" />
             </div>
             <div>
-              <h2 className="font-bold text-[#0F172A]">Informations personnelles</h2>
-              <p className="text-xs text-slate-400">Modifiez vos informations de profil</p>
+              <h2 className="font-bold text-[#0F172A]">{t("dashboard.personal_info")}</h2>
+              <p className="text-xs text-slate-400">{t("dashboard.personal_info_subtitle")}</p>
             </div>
           </div>
 
-          {success && <div className="mb-5"><Alert type="success">Profil mis à jour avec succès !</Alert></div>}
+          {success && <div className="mb-5"><Alert type="success">{t("dashboard.profile_updated")}</Alert></div>}
           {error && <div className="mb-5"><Alert type="error">{error}</Alert></div>}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <FormField label="Nom complet">
+            <FormField label={t("auth.full_name")}>
               <DashInput
                 icon={User}
                 type="text"
                 value={form.nom}
                 onChange={(e) => setForm({ ...form, nom: e.target.value })}
-                placeholder="Votre nom complet"
+                placeholder={t("auth.full_name")}
               />
             </FormField>
 
-            <FormField label="Email" hint="non modifiable">
+            <FormField label={t("auth.email")} hint={t("common.not_editable")}>
               <DashInput icon={Mail} type="email" value={profile?.email || ""} disabled placeholder="—" />
             </FormField>
 
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <FormField label="Téléphone">
+              <FormField label={t("auth.phone")}>
                 <DashInput
                   icon={Phone}
                   type="tel"
@@ -165,13 +167,13 @@ export default function LocataireProfilePage() {
                   placeholder="+212 6 00 00 00 00"
                 />
               </FormField>
-              <FormField label="Adresse">
+              <FormField label={t("auth.address")}>
                 <DashInput
                   icon={MapPin}
                   type="text"
                   value={form.adresse}
                   onChange={(e) => setForm({ ...form, adresse: e.target.value })}
-                  placeholder="Votre adresse"
+                  placeholder={t("auth.address")}
                 />
               </FormField>
             </div>
@@ -185,12 +187,12 @@ export default function LocataireProfilePage() {
               {saving ? (
                 <>
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  Enregistrement...
+                  {t("dashboard.saving")}
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4" />
-                  Enregistrer les modifications
+                  {t("dashboard.save_changes")}
                 </>
               )}
             </button>

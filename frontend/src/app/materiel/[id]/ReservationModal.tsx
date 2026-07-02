@@ -14,7 +14,6 @@ export function ReservationModal({
   endDate,
   days,
   rentalCost,
-  serviceFee,
   total,
   loading,
   error,
@@ -30,7 +29,6 @@ export function ReservationModal({
   endDate: string;
   days: number;
   rentalCost: number;
-  serviceFee: number;
   total: number;
   loading: boolean;
   error: string | null;
@@ -65,10 +63,6 @@ export function ReservationModal({
               <div className="flex justify-between text-sm">
                 <span className="text-muted">Location ({formatPrice(prixParJour)} x {days}j)</span>
                 <span className="font-medium">{formatPrice(rentalCost)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted">Frais de service</span>
-                <span className="font-medium">{formatPrice(serviceFee)}</span>
               </div>
               <div className="flex justify-between font-bold border-t pt-2">
                 <span>Total</span>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useI18n } from "@/context/I18nContext";
 import {
   LayoutGrid,
   Package,
@@ -18,19 +19,19 @@ import {
 
 type NavItem = {
   href: string;
-  label: string;
+  labelKey: string;
   icon: typeof Package;
   exact?: boolean;
   badgeKey?: "messages";
 };
 
 const PRIMARY_NAV: NavItem[] = [
-  { href: "/dashboard/locataire",            label: "Dashboard",      icon: LayoutGrid,    exact: true },
-  { href: "/dashboard/locataire/locations",  label: "Mes locations",  icon: Package },
-  { href: "/dashboard/locataire/paiements",  label: "Paiements",      icon: CreditCard },
-  { href: "/dashboard/locataire/messages",   label: "Messages",       icon: MessageSquare, badgeKey: "messages" },
-  { href: "/dashboard/locataire/favoris",    label: "Favoris",        icon: Heart },
-  { href: "/dashboard/locataire/profile",    label: "Mon Profil",     icon: User },
+  { href: "/dashboard/locataire",            labelKey: "nav.dashboard",       icon: LayoutGrid,    exact: true },
+  { href: "/dashboard/locataire/locations",  labelKey: "dashboard.my_rentals", icon: Package },
+  { href: "/dashboard/locataire/paiements",  labelKey: "dashboard.payments",   icon: CreditCard },
+  { href: "/dashboard/locataire/messages",   labelKey: "dashboard.messages",   icon: MessageSquare, badgeKey: "messages" },
+  { href: "/dashboard/locataire/favoris",    labelKey: "dashboard.favorites",  icon: Heart },
+  { href: "/dashboard/locataire/profile",    labelKey: "dashboard.profile",    icon: User },
 ];
 
 interface Props {
@@ -42,6 +43,7 @@ export default function LocataireSidebar({ onClose, unreadMessages = 0 }: Props)
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { t } = useI18n();
 
   function handleLogout() {
     logout();
@@ -78,7 +80,7 @@ export default function LocataireSidebar({ onClose, unreadMessages = 0 }: Props)
           <button
             onClick={onClose}
             className="grid h-7 w-7 place-items-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100"
-            aria-label="Fermer"
+            aria-label={t("nav.close")}
           >
             <X className="h-4 w-4" />
           </button>
@@ -86,11 +88,11 @@ export default function LocataireSidebar({ onClose, unreadMessages = 0 }: Props)
       </div>
 
       <p className="px-5 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-300">
-        Navigation
+        {t("dashboard.navigation")}
       </p>
 
       <nav className="flex flex-col gap-0.5 px-3">
-        {PRIMARY_NAV.map(({ href, label, icon: Icon, exact, badgeKey }) => {
+        {PRIMARY_NAV.map(({ href, labelKey, icon: Icon, exact, badgeKey }) => {
           const active = isActive(href, exact);
           const showBadge = badgeKey === "messages" && unreadMessages > 0;
           return (
@@ -122,7 +124,7 @@ export default function LocataireSidebar({ onClose, unreadMessages = 0 }: Props)
                 strokeWidth={active ? 2.25 : 1.75}
                 style={{ color: active ? "#F8812B" : undefined }}
               />
-              <span className="flex-1 truncate">{label}</span>
+              <span className="flex-1 truncate">{t(labelKey)}</span>
               {showBadge && (
                 <span
                   className="grid min-w-[20px] place-items-center rounded-full px-1.5 text-[10px] font-bold text-white"
@@ -152,7 +154,7 @@ export default function LocataireSidebar({ onClose, unreadMessages = 0 }: Props)
               }}
             >
               <Building2 className="h-[17px] w-[17px] shrink-0" strokeWidth={1.75} />
-              <span className="flex-1 truncate">Espace Propriétaire</span>
+              <span className="flex-1 truncate">{t("dashboard.owner_space")}</span>
             </Link>
           </>
         )}
@@ -171,8 +173,13 @@ export default function LocataireSidebar({ onClose, unreadMessages = 0 }: Props)
             style={{ background: "#F8812B" }}
           >
             {user?.photo ? (
-
-              <img src={user.photo} alt={user.nom} className="h-9 w-9 object-cover" />
+              <img
+                src={user.photo}
+                alt={user.nom}
+                className="h-9 w-9 object-cover"
+                referrerPolicy="no-referrer"
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/avatar-placeholder.svg"; }}
+              />
             ) : (
               initials
             )}
@@ -184,13 +191,13 @@ export default function LocataireSidebar({ onClose, unreadMessages = 0 }: Props)
 
           <div className="min-w-0 flex-1">
             <p className="truncate text-[13px] font-semibold text-[#0F172A]">{user?.nom}</p>
-            <p className="text-[11px] text-slate-400">Locataire</p>
+            <p className="text-[11px] text-slate-400">{t("auth.role_locataire")}</p>
           </div>
 
           <button
             onClick={handleLogout}
             className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500"
-            aria-label="Se déconnecter"
+            aria-label={t("nav.logout")}
           >
             <LogOut className="h-[15px] w-[15px]" />
           </button>

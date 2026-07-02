@@ -6,8 +6,10 @@ import { CheckCircle2, Clock3 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { getLocation, type Location } from "@/lib/api";
+import { useI18n } from "@/context/I18nContext";
 
 export default function ReservationConfirmationPage() {
+  const { t } = useI18n();
   const [locationId, setLocationId] = useState<string | null>(null);
   const [location, setLocation] = useState<Location | null>(null);
 
@@ -28,28 +30,28 @@ export default function ReservationConfirmationPage() {
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
             <CheckCircle2 className="h-9 w-9 text-emerald-600" />
           </div>
-          <p className="mt-6 text-xs font-black uppercase tracking-[0.18em] text-emerald-600">Demande envoyée</p>
-          <h1 className="mt-2 text-3xl font-black text-slate-950">Réservation confirmée</h1>
+          <p className="mt-6 text-xs font-black uppercase tracking-[0.18em] text-emerald-600">{t("catalogue.request_sent")}</p>
+          <h1 className="mt-2 text-3xl font-black text-slate-950">{t("catalogue.reservation_confirmed")}</h1>
           <p className="mx-auto mt-4 max-w-lg text-slate-500">
-            Votre demande de réservation a été créée. Le propriétaire doit maintenant l’accepter.
+            {t("catalogue.reservation_confirmed_body")}
           </p>
 
           <div className="mt-8 rounded-2xl bg-slate-50 p-5 text-left">
             <div className="flex items-center justify-between gap-4">
-              <span className="text-sm text-slate-500">Référence</span>
+              <span className="text-sm text-slate-500">{t("table.reference")}</span>
               <span className="font-black text-slate-950">{reference}</span>
             </div>
             {location && (
               <>
                 <div className="mt-3 flex items-center justify-between gap-4">
-                  <span className="text-sm text-slate-500">Matériel</span>
+                  <span className="text-sm text-slate-500">{t("table.materiel")}</span>
                   <span className="text-right font-semibold text-slate-800">{location.materielId?.nom}</span>
                 </div>
                 <div className="mt-3 flex items-center justify-between gap-4">
-                  <span className="text-sm text-slate-500">Statut</span>
+                  <span className="text-sm text-slate-500">{t("table.status")}</span>
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">
                     <Clock3 className="h-3.5 w-3.5" />
-                    En attente
+                    {t("catalogue.status_pending")}
                   </span>
                 </div>
               </>
@@ -61,13 +63,13 @@ export default function ReservationConfirmationPage() {
               href="/dashboard/locataire/locations"
               className="inline-flex h-10 items-center justify-center rounded-lg bg-[#ff6700] px-4 text-sm font-bold text-white hover:bg-[#e85d00]"
             >
-              Voir mes réservations
+              {t("catalogue.view_my_reservations")}
             </Link>
             <Link
               href="/catalogue"
               className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
             >
-              Retour au catalogue
+              {t("catalogue.back_to_catalogue")}
             </Link>
           </div>
         </div>
