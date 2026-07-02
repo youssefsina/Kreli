@@ -12,9 +12,18 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { formatPrice, toggleFavori, getMyFavoris, getApiBaseUrl, type Materiel } from "@/lib/api";
+import {
+  formatPrice,
+  toggleFavori,
+  getMyFavoris,
+  getApiBaseUrl,
+  getOrCreateConversation,
+  sendConversationMessage,
+  type Materiel,
+} from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useI18n } from "@/context/I18nContext";
+import { useMessagesContext } from "@/context/MessagesContext";
 import { SimilarMateriels } from "./SimilarMateriels";
 import { ContactModal } from "./ContactModal";
 
@@ -32,11 +41,14 @@ export default function MaterielDetailClient({ materiel, similar }: MaterielDeta
   const router = useRouter();
   const { t } = useI18n();
   const { user, token, isLoading: authLoading } = useAuth();
+  const { refresh: refreshConversations } = useMessagesContext();
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const [contactSending, setContactSending] = useState(false);
+  const [contactError, setContactError] = useState<string | null>(null);
   const [reservationError, setReservationError] = useState<string | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
@@ -120,13 +132,36 @@ export default function MaterielDetailClient({ materiel, similar }: MaterielDeta
   };
 
   const handleContact = () => {
+    setContactError(null);
     setIsContactOpen(true);
   };
 
-  const handleSendMessage = () => {
-    alert(t("catalogue.message_sent"));
-    setIsContactOpen(false);
-    setMessage("");
+  const handleSendMessage = async () => {
+    if (authLoading) return;
+    if (!token) {
+      setIsContactOpen(false);
+      router.push(`/auth/login?redirect=/materiel/${materiel._id}`);
+      return;
+    }
+    if (!message.trim()) {
+      setContactError(t("catalogue.err_empty_message"));
+      return;
+    }
+
+    setContactSending(true);
+    setContactError(null);
+    try {
+      const conversation = await getOrCreateConversation(materiel._id);
+      await sendConversationMessage(conversation._id, message.trim());
+      await refreshConversations();
+      setIsContactOpen(false);
+      setMessage("");
+      router.push(`/dashboard/locataire/messages?conv=${conversation._id}`);
+    } catch (err) {
+      setContactError(err instanceof Error ? err.message : t("catalogue.err_message_failed"));
+    } finally {
+      setContactSending(false);
+    }
   };
 
   return (
@@ -400,6 +435,8 @@ export default function MaterielDetailClient({ materiel, similar }: MaterielDeta
         materielNom={materiel.nom}
         message={message}
         onMessageChange={setMessage}
+        sending={contactSending}
+        error={contactError}
         onCancel={() => setIsContactOpen(false)}
         onSend={handleSendMessage}
       />

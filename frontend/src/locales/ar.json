@@ -287,7 +287,9 @@
     "reservation_confirmed_body": "تم إنشاء طلب الحجز الخاص بك. يجب على المالك الآن قبوله.",
     "status_pending": "قيد الانتظار",
     "view_my_reservations": "عرض حجوزاتي",
-    "back_to_catalogue": "العودة إلى الكتالوج"
+    "back_to_catalogue": "العودة إلى الكتالوج",
+    "err_empty_message": "اكتب رسالة قبل الإرسال.",
+    "err_message_failed": "تعذر إرسال الرسالة. حاول مرة أخرى."
   },
   "location_filter": {
     "trigger_label_empty": "كل المدن",

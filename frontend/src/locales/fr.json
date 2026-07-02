@@ -287,7 +287,9 @@
     "reservation_confirmed_body": "Votre demande de réservation a été créée. Le propriétaire doit maintenant l'accepter.",
     "status_pending": "En attente",
     "view_my_reservations": "Voir mes réservations",
-    "back_to_catalogue": "Retour au catalogue"
+    "back_to_catalogue": "Retour au catalogue",
+    "err_empty_message": "Écrivez un message avant d'envoyer.",
+    "err_message_failed": "Impossible d'envoyer le message. Réessayez."
   },
   "location_filter": {
     "trigger_label_empty": "Toutes les villes",

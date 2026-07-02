@@ -2,6 +2,7 @@ const Conversation = require("../models/Conversation");
 const Message = require("../models/Message");
 const Materiel = require("../models/Materiel");
 const { validationResult } = require("express-validator");
+const { detectRestrictedContent, isParticipant, createMessageAndNotify } = require("../services/messages.service");
 
 
 async function getOrCreateConversation(req, res) {
@@ -89,11 +90,7 @@ async function getMessages(req, res) {
       return res.status(404).json({ success: false, message: "Conversation introuvable" });
     }
 
-    const isParticipant =
-      conversation.locataireId.toString() === userId ||
-      conversation.proprietaireId.toString() === userId;
-
-    if (!isParticipant) {
+    if (!isParticipant(conversation, userId)) {
       return res.status(403).json({ success: false, message: "Accès refusé" });
     }
 
@@ -123,4 +120,51 @@ async function getMessages(req, res) {
   }
 }
 
-module.exports = { getOrCreateConversation, getMyConversations, getMessages };
+
+async function sendMessage(req, res) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, message: errors.array()[0].msg });
+  }
+
+  try {
+    const { id } = req.params;
+    const { contenu, imageUrl } = req.body;
+    const userId = req.user.id;
+
+    if (!contenu?.trim() && !imageUrl) {
+      return res.status(400).json({ success: false, message: "Le message est vide" });
+    }
+
+    const conversation = await Conversation.findById(id);
+    if (!conversation) {
+      return res.status(404).json({ success: false, message: "Conversation introuvable" });
+    }
+
+    if (!isParticipant(conversation, userId)) {
+      return res.status(403).json({ success: false, message: "Accès refusé" });
+    }
+
+    if (contenu?.trim()) {
+      const restricted = detectRestrictedContent(contenu);
+      if (restricted) {
+        return res.status(400).json({
+          success: false,
+          message:
+            restricted === "phone"
+              ? "Les numéros de téléphone ne sont pas autorisés dans le chat."
+              : "Les liens externes ne sont pas autorisés dans le chat.",
+        });
+      }
+    }
+
+    const io = req.app.get("io");
+    const message = await createMessageAndNotify({ io, conversation, senderId: userId, contenu, imageUrl });
+
+    return res.status(201).json({ success: true, data: message });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+module.exports = { getOrCreateConversation, getMyConversations, getMessages, sendMessage };

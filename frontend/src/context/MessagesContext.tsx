@@ -20,7 +20,7 @@ type MessagesContextType = {
   activeConversationId: string | null;
   setActiveConversationId: (id: string | null) => void;
   markConversationRead: (conversationId: string) => void;
-  refresh: () => void;
+  refresh: () => Promise<void>;
 };
 
 const MessagesContext = createContext<MessagesContextType>({
@@ -30,7 +30,7 @@ const MessagesContext = createContext<MessagesContextType>({
   activeConversationId: null,
   setActiveConversationId: () => {},
   markConversationRead: () => {},
-  refresh: () => {},
+  refresh: async () => {},
 });
 
 export function MessagesProvider({ children }: { children: ReactNode }) {
@@ -40,14 +40,20 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const activeConversationIdRef = useRef<string | null>(null);
   activeConversationIdRef.current = activeConversationId;
+  const conversationsRef = useRef<Conversation[]>([]);
+  conversationsRef.current = conversations;
 
-  const refresh = useCallback(() => {
+  const refresh = useCallback(async () => {
     if (!user) return;
     setLoading(true);
-    getMyConversations()
-      .then(setConversations)
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    try {
+      const data = await getMyConversations();
+      setConversations(data);
+    } catch {
+      // Keep the previous list on failure.
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
 
   useEffect(() => {
@@ -68,6 +74,14 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
       conversationId: string;
       message: ChatMessage;
     }) {
+      const knownConversation = conversationsRef.current.some((c) => c._id === conversationId);
+      if (!knownConversation) {
+        // First message of a brand new conversation — this client hasn't
+        // fetched it yet, so pull the full list instead of patching state.
+        refresh();
+        return;
+      }
+
       setConversations((prev) =>
         prev.map((c) =>
           c._id === conversationId
@@ -89,7 +103,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
     return () => {
       socket.off("receive_message", onReceiveMessage);
     };
-  }, [token, user]);
+  }, [token, user, refresh]);
 
   const markConversationRead = useCallback(
     (conversationId: string) => {

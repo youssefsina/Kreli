@@ -287,7 +287,9 @@
     "reservation_confirmed_body": "Your rental request has been created. The owner must now accept it.",
     "status_pending": "Pending",
     "view_my_reservations": "View my reservations",
-    "back_to_catalogue": "Back to catalogue"
+    "back_to_catalogue": "Back to catalogue",
+    "err_empty_message": "Write a message before sending.",
+    "err_message_failed": "Couldn't send the message. Please try again."
   },
   "location_filter": {
     "trigger_label_empty": "All cities",

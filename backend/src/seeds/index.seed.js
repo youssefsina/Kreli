@@ -482,6 +482,7 @@ async function seed() {
       {
         conversationId: conv1._id,
         expediteurId: locataire._id,
+        receiverId: proprietaire._id,
         contenu: "Bonjour Sara, est-ce que la mini pelle est disponible du 15 au 21 mai ? J'ai un chantier de fondations أ  Casablanca.",
         lu: true,
         createdAt: daysAgo(6),
@@ -489,6 +490,7 @@ async function seed() {
       {
         conversationId: conv1._id,
         expediteurId: proprietaire._id,
+        receiverId: locataire._id,
         contenu: "Bonjour Karim ! Oui, elle est libre pour ces dates. La livraison est possible dans un rayon de 30 km. ًںکٹ",
         lu: true,
         createdAt: daysAgo(6),
@@ -496,6 +498,7 @@ async function seed() {
       {
         conversationId: conv1._id,
         expediteurId: locataire._id,
+        receiverId: proprietaire._id,
         contenu: "Parfait ! Je vais faire la demande de rأ©servation tout de suite. Y a-t-il une caution أ  prأ©voir ?",
         lu: true,
         createdAt: daysAgo(5),
@@ -503,6 +506,7 @@ async function seed() {
       {
         conversationId: conv1._id,
         expediteurId: proprietaire._id,
+        receiverId: locataire._id,
         contenu: "Oui, la caution est de 5 000 DH, remboursأ©e dans les 48h aprأ¨s restitution en bon أ©tat. J'ai acceptأ© votre demande !",
         lu: true,
         createdAt: daysAgo(5),
@@ -510,6 +514,7 @@ async function seed() {
       {
         conversationId: conv1._id,
         expediteurId: locataire._id,
+        receiverId: proprietaire._id,
         contenu: "Super, merci beaucoup. أ€ quel endroit puis-je rأ©cupأ©rer l'engin ?",
         lu: true,
         createdAt: daysAgo(4),
@@ -517,6 +522,7 @@ async function seed() {
       {
         conversationId: conv1._id,
         expediteurId: proprietaire._id,
+        receiverId: locataire._id,
         contenu: "Ain Diab, je vous enverrai l'adresse exacte par message le matin de la livraison. Bonne location !",
         lu: false,
         createdAt: daysAgo(1),
@@ -526,6 +532,7 @@ async function seed() {
       {
         conversationId: conv2._id,
         expediteurId: locataire._id,
+        receiverId: proprietaire._id,
         contenu: "Bonjour, je suis intأ©ressأ© par le kit streaming 4K pour un أ©vأ©nement d'entreprise le weekend prochain.",
         lu: true,
         createdAt: daysAgo(1),
@@ -533,6 +540,7 @@ async function seed() {
       {
         conversationId: conv2._id,
         expediteurId: proprietaire._id,
+        receiverId: locataire._id,
         contenu: "Bonjour ! Le kit est disponible. Pour quel type d'أ©vأ©nement ? Je peux inclure un technicien si besoin.",
         lu: true,
         createdAt: daysAgo(1),
@@ -540,6 +548,7 @@ async function seed() {
       {
         conversationId: conv2._id,
         expediteurId: locataire._id,
+        receiverId: proprietaire._id,
         contenu: "C'est pour une confأ©rence de 200 personnes. 2 jours suffiront. J'envoie la demande maintenant.",
         lu: false,
         createdAt: new Date(),

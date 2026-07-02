@@ -335,6 +335,7 @@ async function seed() {
       messageDocs.push({
         conversationId: conv._id,
         expediteurId: participants[m % 2],
+        receiverId: participants[(m + 1) % 2],
         contenu: sampleMsgs[m % sampleMsgs.length],
         lu: chance(0.65),
         createdAt: daysAgo(between(0, 30)),

@@ -5,6 +5,7 @@ const {
   getOrCreateConversation,
   getMyConversations,
   getMessages,
+  sendMessage,
 } = require("../controllers/conversations.controller");
 
 router.use(verifyToken);
@@ -21,5 +22,15 @@ router.post(
 
 
 router.get("/:id/messages", getMessages);
+
+
+router.post(
+  "/:id/messages",
+  [
+    body("contenu").optional().isString().isLength({ max: 2000 }).withMessage("Message trop long"),
+    body("imageUrl").optional().isString(),
+  ],
+  sendMessage
+);
 
 module.exports = router;
