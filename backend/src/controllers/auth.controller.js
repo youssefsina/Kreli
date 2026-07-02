@@ -202,11 +202,14 @@ async function forgotPassword(req, res) {
     if (!email) return res.status(400).json({ message: "Email requis" });
 
     const user = await User.findOne({ email: email.trim().toLowerCase() });
-    
-    if (!user) return res.json({ message: "Si cet email existe, un lien a أ©tأ© envoyأ©." });
+
+    // Privacy: never reveal whether the account exists — this is the only
+    // case where a generic "success" response is sent without actually
+    // emailing anyone.
+    if (!user) return res.json({ message: "Si cet email existe, un lien a été envoyé." });
 
     const token = crypto.randomBytes(32).toString("hex");
-    const expires = new Date(Date.now() + 60 * 60 * 1000); 
+    const expires = new Date(Date.now() + 60 * 60 * 1000);
 
     await User.findByIdAndUpdate(user._id, {
       resetPasswordToken: token,
@@ -216,23 +219,33 @@ async function forgotPassword(req, res) {
     const frontendUrl = process.env.CLIENT_URL || "http://localhost:3000";
     const resetUrl = `${frontendUrl}/auth/reset-password?token=${token}`;
 
+    const { html, text } = buildResetPasswordEmail({ name: user.nom, resetUrl });
+
+    let result;
     try {
-      const { html, text } = buildResetPasswordEmail({ name: user.nom, resetUrl });
-      const result = await sendMail({
+      result = await sendMail({
         to: user.email,
-        subject: "Rأ©initialisation de votre mot de passe Kreli",
+        subject: "Réinitialisation de votre mot de passe Kreli",
         html,
         text,
       });
-      if (result?.skipped) {
-        console.info(`[ForgotPassword] (no SMTP) reset URL for ${email}: ${resetUrl}`);
-      }
     } catch (mailError) {
       console.error(`[ForgotPassword] mail send failed for ${email}:`, mailError.message);
-      console.info(`[ForgotPassword] fallback reset URL: ${resetUrl}`);
+      console.error(`[ForgotPassword] reset URL (email not delivered): ${resetUrl}`);
+      return res.status(502).json({
+        message: "Impossible d'envoyer l'email de réinitialisation pour le moment. Veuillez réessayer plus tard.",
+      });
     }
 
-    return res.json({ message: "Si cet email existe, un lien a أ©tأ© envoyأ©." });
+    if (result?.skipped) {
+      console.error(`[ForgotPassword] SMTP is not configured — email NOT sent for ${email}.`);
+      console.error(`[ForgotPassword] reset URL (email not delivered): ${resetUrl}`);
+      return res.status(502).json({
+        message: "Impossible d'envoyer l'email de réinitialisation pour le moment. Veuillez réessayer plus tard.",
+      });
+    }
+
+    return res.json({ message: "Si cet email existe, un lien a été envoyé." });
   } catch (error) {
     return res.status(500).json({ message: "Erreur serveur" });
   }

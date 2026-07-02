@@ -318,6 +318,7 @@ export default function Navbar() {
                               src={cat.image}
                               alt={cat.nom}
                               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                              onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.jpg"; }}
                             />
                           </div>
                           <div className="min-w-0">
@@ -600,6 +601,7 @@ export default function Navbar() {
                         alt={user.nom}
                         className="h-7 w-7 rounded-full object-cover"
                         referrerPolicy="no-referrer"
+                        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/avatar-placeholder.svg"; }}
                       />
                     ) : (
                       <span className="text-[11px] font-black text-[#004e98]">
@@ -687,7 +689,7 @@ export default function Navbar() {
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger
               className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white transition-colors hover:border-[#004e98] lg:hidden"
-              aria-label="Menu"
+              aria-label={t("nav.menu")}
             >
               <AnimatePresence mode="wait" initial={false}>
                 {sheetOpen ? (
@@ -781,6 +783,7 @@ export default function Navbar() {
                               src={cat.image}
                               alt={cat.nom}
                               className="h-full w-full object-cover"
+                              onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.jpg"; }}
                             />
                           </div>
                           <div>
@@ -853,6 +856,8 @@ export default function Navbar() {
                               src={user.photo}
                               alt={user.nom}
                               className="h-9 w-9 rounded-full object-cover"
+                              referrerPolicy="no-referrer"
+                              onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/avatar-placeholder.svg"; }}
                             />
                           ) : (
                             <User className="h-5 w-5 text-[#004e98]" />

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -11,9 +12,10 @@ import {
   type Location,
 } from "@/lib/api";
 import { Package, AlertCircle, CheckCircle2, Clock, Plus } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { LitigeModal } from "./LitigeModal";
 import { LocationRow } from "./LocationRow";
+import { StatusTabs } from "@/components/dashboard/StatusTabs";
+import { useI18n } from "@/context/I18nContext";
 
 const TABS = [
   { key: "en_attente", label: "En attente", icon: Clock,          color: "#F59E0B" },
@@ -26,11 +28,17 @@ const TABS = [
 ];
 
 const STAGGER = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
+const VALID_TABS = TABS.map((t) => t.key);
 
-export default function LocationsPage() {
+function LocationsPageContent() {
+  const { t } = useI18n();
+  const searchParams = useSearchParams();
+  const statutParam = searchParams.get("statut");
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("en_attente");
+  const [activeTab, setActiveTab] = useState(
+    statutParam !== null && VALID_TABS.includes(statutParam) ? statutParam : "en_attente"
+  );
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [litigeModal, setLitigeModal] = useState<{ id: string } | null>(null);
   const [litigeDesc, setLitigeDesc] = useState("");
@@ -118,7 +126,7 @@ export default function LocationsPage() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-[#0F172A] lg:text-3xl">Mes locations</h1>
+          <h1 className="text-2xl font-black text-[#0F172A] lg:text-3xl">{t("dashboard.my_rentals")}</h1>
 
         </div>
           <Link
@@ -127,61 +135,30 @@ export default function LocationsPage() {
             style={{ background: "#F8812B" }}
           >
             <Plus className="h-4 w-4" strokeWidth={2.5} />
-            Nouvelle location
+            {t("dashboard.new_rental")}
           </Link>
       </div>
 
-      <div className="overflow-x-auto">
-        <div className="flex w-fit gap-0" style={{ borderBottom: "1px solid #E2E8F0" }}>
-          {TABS.map((tab) => {
-            const active = activeTab === tab.key;
-            const count = counts[tab.key as keyof typeof counts] ?? 0;
-            return (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={cn(
-                  "flex items-center gap-2 whitespace-nowrap border-b-2 px-5 py-3 text-sm font-semibold transition-all duration-150",
-                  active
-                    ? "border-[#F97316] text-[#F97316]"
-                    : "border-transparent text-slate-500 hover:text-[#0F172A]"
-                )}
-              >
-                {tab.label}
-                {count > 0 && (
-                  <span
-                    className={cn(
-                      "rounded-full px-2 py-0.5 text-[10px] font-black",
-                      active ? "bg-orange-50 text-[#F97316]" : "bg-slate-100 text-slate-500"
-                    )}
-                  >
-                    {count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <StatusTabs tabs={TABS} active={activeTab} counts={counts} onChange={setActiveTab} />
 
       <div
-        className="overflow-hidden rounded-[20px] bg-white"
+        className="overflow-x-auto rounded-[20px] bg-white"
         style={{ border: "1px solid #E2E8F0", boxShadow: "0 1px 4px rgba(15,23,42,0.06)" }}
       >
 
         <div
-          className="grid grid-cols-[56px_minmax(0,1fr)_200px_120px_160px] gap-4 px-5 py-2.5 text-[10px] font-bold uppercase tracking-widest text-[#94A3B8]"
+          className="grid min-w-[840px] grid-cols-[56px_minmax(0,1fr)_200px_120px_220px] gap-4 px-5 py-2.5 text-[10px] font-bold uppercase tracking-widest text-[#94A3B8]"
           style={{ borderBottom: "1px solid #F1F5F9", background: "#FAFAFA" }}
         >
           <span />
-          <span>Matériel</span>
-          <span>Période de location</span>
-          <span className="text-right pr-7">Statut</span>
-          <span className="text-right pr-8">Action</span>
+          <span>{t("table.materiel")}</span>
+          <span>{t("table.rental_period")}</span>
+          <span className="text-right pr-7">{t("table.status")}</span>
+          <span className="text-right">{t("table.action")}</span>
         </div>
 
         {loading ? (
-          <div className="space-y-px">
+          <div className="min-w-[840px] space-y-px">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="flex items-center gap-4 px-6 py-4">
                 <div className="h-14 w-14 shrink-0 animate-pulse rounded-xl bg-slate-100" />
@@ -232,5 +209,13 @@ export default function LocationsPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function LocationsPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-[60vh] items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-[3px] border-[#F97316] border-t-transparent" /></div>}>
+      <LocationsPageContent />
+    </Suspense>
   );
 }

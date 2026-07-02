@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -13,9 +14,10 @@ import {
   type Location,
 } from "@/lib/api";
 import { Clock, X, ChevronLeft, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { DashCard, Alert } from "@/components/dashboard/DashboardUI";
 import { OwnerLocationRow } from "./OwnerLocationRow";
+import { StatusTabs } from "@/components/dashboard/StatusTabs";
+import { useI18n } from "@/context/I18nContext";
 
 const STAGGER = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } };
 const ITEM = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.28 } } };
@@ -32,15 +34,22 @@ const TABS = [
 const GRID_COLS = "minmax(0,1.6fr) minmax(0,1.4fr) 150px 130px 150px";
 
 const PAGE_SIZE = 10;
+const VALID_TABS = TABS.map((tb) => tb.key);
 
-export default function ProprietaireLocationsPage() {
+function ProprietaireLocationsContent() {
+  const { t } = useI18n();
+  const searchParams = useSearchParams();
+  const statutParam = searchParams.get("statut");
   const { user, isLoading: authLoading } = useAuth();
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState("");
+  const [tab, setTab] = useState(
+    statutParam !== null && VALID_TABS.includes(statutParam) ? statutParam : ""
+  );
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
+  const [counts, setCounts] = useState<Record<string, number>>({});
   const [acting, setActing] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [confirmReturn, setConfirmReturn] = useState<string | null>(null);
@@ -51,6 +60,13 @@ export default function ProprietaireLocationsPage() {
     load();
 
   }, [authLoading, user, tab, page]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user || (user.role !== "proprietaire" && user.role !== "both" && user.role !== "admin")) return;
+    loadCounts();
+
+  }, [authLoading, user]);
 
   async function load() {
     setLoading(true);
@@ -66,6 +82,19 @@ export default function ProprietaireLocationsPage() {
     }
   }
 
+  async function loadCounts() {
+    try {
+      const results = await Promise.all(
+        TABS.map((tb) => getOwnerLocations({ statut: tb.key || undefined, page: 1, limit: 1 }))
+      );
+      const next: Record<string, number> = {};
+      TABS.forEach((tb, i) => { next[tb.key] = results[i].total; });
+      setCounts(next);
+    } catch {
+      // Keep previous counts on failure — badges just won't update this time.
+    }
+  }
+
   async function act(id: string, action: "accept" | "reject" | "start" | "return") {
     setActing(id);
     setActionError(null);
@@ -74,7 +103,7 @@ export default function ProprietaireLocationsPage() {
       else if (action === "reject") await rejectLocation(id);
       else if (action === "start")  await startLocation(id);
       else                          await returnMateriel(id);
-      await load();
+      await Promise.all([load(), loadCounts()]);
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Erreur lors de l'action");
     } finally {
@@ -116,26 +145,8 @@ export default function ProprietaireLocationsPage() {
           </motion.div>
         )}
 
-        <motion.div variants={ITEM} className="overflow-x-auto">
-          <div className="flex w-fit gap-0" style={{ borderBottom: "1px solid #E2E8F0" }}>
-            {TABS.map((t) => {
-              const active = tab === t.key;
-              return (
-                <button
-                  key={t.key}
-                  onClick={() => changeTab(t.key)}
-                  className={cn(
-                    "flex items-center gap-2 whitespace-nowrap border-b-2 px-5 py-3 text-sm font-semibold transition-all duration-150",
-                    active
-                      ? "border-[#F97316] text-[#F97316]"
-                      : "border-transparent text-slate-500 hover:text-[#0F172A]"
-                  )}
-                >
-                  {t.label}
-                </button>
-              );
-            })}
-          </div>
+        <motion.div variants={ITEM}>
+          <StatusTabs tabs={TABS} active={tab} counts={counts} onChange={changeTab} />
         </motion.div>
 
         <motion.div variants={ITEM}>
@@ -145,11 +156,11 @@ export default function ProprietaireLocationsPage() {
               className="hidden items-center gap-4 px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-[#94A3B8] md:grid"
               style={{ gridTemplateColumns: GRID_COLS, borderBottom: "1px solid #F1F5F9", background: "#FAFAFA" }}
             >
-              <span>Matériel</span>
-              <span>Locataire</span>
-              <span>Période</span>
-              <span>Montant</span>
-              <span className="text-right">Actions</span>
+              <span>{t("table.materiel")}</span>
+              <span>{t("auth.role_locataire")}</span>
+              <span>{t("table.period")}</span>
+              <span>{t("table.amount")}</span>
+              <span className="text-right">{t("table.action")}</span>
             </div>
 
             {loading ? (
@@ -215,5 +226,13 @@ export default function ProprietaireLocationsPage() {
         </motion.div>
       </motion.div>
     </div>
+  );
+}
+
+export default function ProprietaireLocationsPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-[60vh] items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-[3px] border-[#F97316] border-t-transparent" /></div>}>
+      <ProprietaireLocationsContent />
+    </Suspense>
   );
 }

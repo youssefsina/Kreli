@@ -3,17 +3,19 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useI18n } from "@/context/I18nContext";
+import { useMessagesContext } from "@/context/MessagesContext";
 import { Menu, Plus } from "lucide-react";
 import Link from "next/link";
 import ProprietaireSidebar from "@/components/dashboard/ProprietaireSidebar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { getNotifications } from "@/lib/api";
 
 export default function ProprietaireLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
+  const { t } = useI18n();
+  const { totalUnread } = useMessagesContext();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [unread, setUnread] = useState(0);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -24,12 +26,6 @@ export default function ProprietaireLayout({ children }: { children: React.React
       router.push("/dashboard/locataire");
     }
   }, [isLoading, user, router]);
-
-  useEffect(() => {
-    if (user) {
-      getNotifications().then((r) => setUnread(r.unreadCount)).catch(() => {});
-    }
-  }, [user]);
 
   if (isLoading || !user) {
     return (
@@ -43,12 +39,12 @@ export default function ProprietaireLayout({ children }: { children: React.React
     <div className="flex h-screen overflow-hidden" style={{ background: "#F8FAFC" }}>
 
       <aside className="hidden w-[240px] shrink-0 overflow-y-auto lg:block">
-        <ProprietaireSidebar unreadMessages={unread} />
+        <ProprietaireSidebar unreadMessages={totalUnread} />
       </aside>
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className="w-[240px] p-0 border-0" showCloseButton={false}>
-          <ProprietaireSidebar onClose={() => setMobileOpen(false)} unreadMessages={unread} />
+          <ProprietaireSidebar onClose={() => setMobileOpen(false)} unreadMessages={totalUnread} />
         </SheetContent>
       </Sheet>
 
@@ -61,7 +57,7 @@ export default function ProprietaireLayout({ children }: { children: React.React
           <button
             onClick={() => setMobileOpen(true)}
             className="grid h-9 w-9 place-items-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100"
-            aria-label="Menu"
+            aria-label={t("nav.menu")}
           >
             <Menu className="h-5 w-5" strokeWidth={1.75} />
           </button>
@@ -82,7 +78,7 @@ export default function ProprietaireLayout({ children }: { children: React.React
             href="/dashboard/proprietaire/ajouter"
             className="grid h-9 w-9 place-items-center rounded-lg text-white"
             style={{ background: "#F97316" }}
-            aria-label="Ajouter un matériel"
+            aria-label={t("dashboard.add_materiel")}
           >
             <Plus className="h-5 w-5" strokeWidth={2.25} />
           </Link>

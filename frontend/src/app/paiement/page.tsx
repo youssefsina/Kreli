@@ -18,7 +18,6 @@ type PendingBooking = {
   days: number;
   prixParJour: number;
   rentalCost: number;
-  serviceFee: number;
   total: number;
   caution: number;
 };
@@ -166,10 +165,6 @@ export default function PaiementPage() {
               <div className="flex justify-between">
                 <span className="text-slate-500">Location</span>
                 <span className="font-semibold">{formatPrice(booking.rentalCost)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Frais de service</span>
-                <span className="font-semibold">{formatPrice(booking.serviceFee)}</span>
               </div>
               <div className="flex justify-between border-t border-slate-100 pt-3 text-base font-black">
                 <span>Total</span>
