@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { MapPin, Star, ArrowRight, Heart } from 'lucide-react'
 import { formatPrice, getMaterielImage, type Materiel } from '@/lib/api'
+import { useI18n } from '@/context/I18nContext'
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } }
 const card = {
@@ -14,6 +15,7 @@ const card = {
 }
 
 export default function FeaturedSection({ materiels }: { materiels: Materiel[] }) {
+  const { t } = useI18n()
   return (
     <section className="py-20" style={{ background: 'linear-gradient(180deg, #fdf2f8 0%, #f8fafc 100%)' }}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -26,10 +28,10 @@ export default function FeaturedSection({ materiels }: { materiels: Materiel[] }
             <span className="mb-3 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold uppercase tracking-widest"
               style={{ background: 'rgba(244,63,94,0.08)', color: '#f43f5e', border: '1px solid rgba(244,63,94,0.15)' }}
             >
-              💎 À la une
+              💎 {t('featured_section.label')}
             </span>
             <h2 className="mt-3 text-3xl font-bold sm:text-4xl" style={{ color: '#1a1a2e' }}>
-              Équipements sélectionnés
+              {t('featured_section.title')}
             </h2>
           </div>
           <Link href="/catalogue"
@@ -40,7 +42,7 @@ export default function FeaturedSection({ materiels }: { materiels: Materiel[] }
               background: 'rgba(244,63,94,0.05)',
             }}
           >
-            Voir tout <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            {t('featured_section.view_all')} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </motion.div>
 
@@ -75,6 +77,7 @@ export default function FeaturedSection({ materiels }: { materiels: Materiel[] }
                       sizes="(max-width:640px) 100vw,(max-width:1024px) 50vw,25vw"
                       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.08)' }}
                       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)' }}
+                      onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = '/placeholder.jpg' }}
                     />
                     
                     <span className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-xs font-semibold ${
@@ -82,7 +85,7 @@ export default function FeaturedSection({ materiels }: { materiels: Materiel[] }
                         ? 'bg-green-100 text-green-700'
                         : 'bg-red-100 text-red-600'
                     }`}>
-                      {item.disponible ? 'Disponible' : 'Loué'}
+                      {item.disponible ? t('catalogue.available') : t('catalogue.rented')}
                     </span>
                     
                     <button
@@ -110,7 +113,7 @@ export default function FeaturedSection({ materiels }: { materiels: Materiel[] }
                         <span className="text-lg font-bold" style={{ color: '#f43f5e' }}>
                           {formatPrice(item.prixParJour)}
                         </span>
-                        <span className="ml-1 text-xs" style={{ color: '#94a3b8' }}>/jour</span>
+                        <span className="ml-1 text-xs" style={{ color: '#94a3b8' }}>{t('catalogue.per_day')}</span>
                       </span>
                       <div className="flex items-center gap-1 text-xs" style={{ color: '#64748b' }}>
                         <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />

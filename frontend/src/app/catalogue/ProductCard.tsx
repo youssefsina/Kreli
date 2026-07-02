@@ -2,14 +2,20 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import type { SyntheticEvent } from "react";
 import { MapPin } from "lucide-react";
-import { formatPrice, type Materiel } from "@/lib/api";
+import { formatPrice, getMaterielImage, type Materiel } from "@/lib/api";
 
 type ViewMode = "grid" | "list";
 
+function onImageError(e: SyntheticEvent<HTMLImageElement>) {
+  e.currentTarget.onerror = null;
+  e.currentTarget.src = "/placeholder.jpg";
+}
+
 export function ProductCard({ product, view }: { product: Materiel; view: ViewMode }) {
   const categorieNom = typeof product.categorieId === "object" ? product.categorieId?.nom : "Équipement";
-  const imageUrl = product.photos?.[0]?.url || "/placeholder.jpg";
+  const imageUrl = getMaterielImage(product) ?? "/placeholder.jpg";
   const localisation = product.localisation || "Non spécifiée";
 
   if (view === "list") {
@@ -26,6 +32,7 @@ export function ProductCard({ product, view }: { product: Materiel; view: ViewMo
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-110"
             sizes="192px"
+            onError={onImageError}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <span
@@ -100,6 +107,7 @@ export function ProductCard({ product, view }: { product: Materiel; view: ViewMo
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-110"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          onError={onImageError}
         />
 
         <div

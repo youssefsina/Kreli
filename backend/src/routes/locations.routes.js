@@ -6,7 +6,7 @@ const { verifyToken, requireRole } = require("../middleware/auth.middleware");
 
 
 
-router.post("/", verifyToken, locationsController.createLocation);
+router.post("/", verifyToken, requireRole("locataire", "both", "admin"), locationsController.createLocation);
 router.get("/", verifyToken, locationsController.getMyLocations);
 
 

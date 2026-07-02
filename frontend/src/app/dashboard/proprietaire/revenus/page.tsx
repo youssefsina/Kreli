@@ -117,7 +117,7 @@ export default function RevenusPage() {
             icon={Package}
             label="Commission"
             value={formatPrice(totalCommission)}
-            sub="Frais de service Kreli"
+            sub="Commission plateforme Kreli"
           />
         </motion.div>
 
@@ -180,7 +180,7 @@ export default function RevenusPage() {
                 {done.slice(0, 15).map((l, i) => {
                   const nom = (l.materielId as unknown as { nom?: string })?.nom ?? "Matériel";
                   const net = (l as unknown as { montantNetProprio?: number }).montantNetProprio ?? 0;
-                  const pct = l.montantLocation > 0 ? Math.round((net / l.montantLocation) * 100) : 0;
+                  const commissionTaux = (l as unknown as { commissionTaux?: number }).commissionTaux ?? null;
                   return (
                     <div
                       key={l._id}
@@ -203,7 +203,9 @@ export default function RevenusPage() {
                       </div>
                       <div className="sm:text-right">
                         <div className="text-sm font-bold text-emerald-600">{formatPrice(net)}</div>
-                        <div className="text-[10px] text-slate-400">{pct}%</div>
+                        {commissionTaux !== null && (
+                          <div className="text-[10px] text-slate-400">Commission {commissionTaux}%</div>
+                        )}
                       </div>
                     </div>
                   );

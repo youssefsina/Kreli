@@ -11,6 +11,7 @@ import {
 import { Package } from "lucide-react";
 import { DashCard, Alert, StatusPill, Pagination } from "@/components/dashboard/DashboardUI";
 import { formatShortDate } from "@/lib/format";
+import { useI18n } from "@/context/I18nContext";
 
 const STAGGER = { hidden: {}, show: { transition: { staggerChildren: 0.04 } } };
 const ITEM = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.28 } } };
@@ -21,6 +22,7 @@ const SELECT_CLASS =
   "rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] px-2.5 py-1.5 text-xs text-[#0F172A] outline-none transition focus:border-[#F97316] focus:bg-white cursor-pointer";
 
 function AdminLocationsContent() {
+  const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [locations, setLocations] = useState<Location[]>([]);
@@ -53,7 +55,7 @@ function AdminLocationsContent() {
       <motion.div variants={STAGGER} initial="hidden" animate="show" className="space-y-5">
         <motion.div variants={ITEM} className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-[#0F172A] lg:text-3xl">Locations</h1>
+            <h1 className="text-2xl font-black text-[#0F172A] lg:text-3xl">{t("dashboard.locations_admin")}</h1>
             <p className="mt-1 text-sm text-slate-400">{pagination.total} demandes au total</p>
           </div>
           <select
@@ -79,7 +81,7 @@ function AdminLocationsContent() {
               className="hidden items-center gap-3 px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-[#94A3B8] md:grid"
               style={{ gridTemplateColumns: GRID_COLS, borderBottom: "1px solid #F1F5F9", background: "#FAFAFA" }}
             >
-              <span>Matériel</span><span>Locataire</span><span>Propriétaire</span><span>Période</span><span>Montant</span><span>Statut</span>
+              <span>{t("table.materiel")}</span><span>{t("auth.role_locataire")}</span><span>{t("auth.role_proprietaire")}</span><span>{t("table.period")}</span><span>{t("table.amount")}</span><span>{t("table.status")}</span>
             </div>
 
             {loading ? (

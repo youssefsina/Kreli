@@ -1,5 +1,6 @@
 const Location = require("../models/Location");
 const Materiel = require("../models/Materiel");
+const Notification = require("../models/Notification");
 const { getCurrentCommissionTaux } = require("../models/CommissionConfig");
 const Paiement = require("../models/Paiement");
 const { body } = require("express-validator");
@@ -12,6 +13,17 @@ const findPopulated = (id, locataireSelect = "nom email") =>
 
 const emitStatut = (req, room, location, statut) => {
   req.app.get("io").to(room).emit("location_update", { locationId: location._id, statut });
+};
+
+const notifyUser = async (req, { destinataireId, type, titre, contenu, lienRedirection }) => {
+  const notification = await Notification.create({
+    destinataireId,
+    type,
+    titre,
+    contenu,
+    lienRedirection,
+  });
+  req.app.get("io").to(destinataireId.toString()).emit("new_notification", { notification });
 };
 
 exports.createLocation = [
@@ -69,6 +81,14 @@ exports.createLocation = [
       const populated = await Location.findById(location._id)
         .populate("materielId", "nom photos")
         .populate("locataireId", "nom email");
+
+      await notifyUser(req, {
+        destinataireId: materiel.proprietaireId,
+        type: "reservation",
+        titre: "Nouvelle demande de location",
+        contenu: `${populated.locataireId.nom} souhaite louer "${materiel.nom}".`,
+        lienRedirection: "/dashboard/proprietaire/locations?statut=en_attente",
+      });
 
       res.status(201).json({ data: populated });
     } catch (err) {
@@ -190,7 +210,7 @@ exports.getOwnerLocations = async (req, res) => {
   }
 };
 
-const ownerTransition = async (req, res, { from, to, invalidMsg, successMsg, releaseMateriel }) => {
+const ownerTransition = async (req, res, { from, to, invalidMsg, successMsg, releaseMateriel, notif }) => {
   try {
     const location = await Location.findById(req.params.id);
     if (!location) return res.status(404).json({ message: "Location non trouvée" });
@@ -213,6 +233,16 @@ const ownerTransition = async (req, res, { from, to, invalidMsg, successMsg, rel
 
     emitStatut(req, location.locataireId.toString(), location, to);
 
+    if (notif) {
+      await notifyUser(req, {
+        destinataireId: location.locataireId,
+        type: "reservation",
+        titre: notif.titre,
+        contenu: notif.contenu(materiel.nom),
+        lienRedirection: `/dashboard/locataire/locations?statut=${to}`,
+      });
+    }
+
     const populated = await findPopulated(location._id, "nom email telephone");
     res.json({ message: successMsg, data: populated });
   } catch (err) {
@@ -227,6 +257,10 @@ exports.acceptLocation = (req, res) =>
     invalidMsg: "Statut invalide",
     successMsg: "Location acceptée",
     releaseMateriel: false,
+    notif: {
+      titre: "Demande acceptée !",
+      contenu: (materielNom) => `Votre demande de location pour "${materielNom}" a été acceptée.`,
+    },
   });
 
 exports.rejectLocation = (req, res) =>
@@ -236,6 +270,10 @@ exports.rejectLocation = (req, res) =>
     invalidMsg: "Statut invalide",
     successMsg: "Location refusée",
     releaseMateriel: true,
+    notif: {
+      titre: "Demande refusée",
+      contenu: (materielNom) => `Votre demande de location pour "${materielNom}" a été refusée.`,
+    },
   });
 
 exports.startLocation = (req, res) =>

@@ -113,11 +113,11 @@ export default function HomeLandingClient({ categories, featured }: Props) {
                 className="font-display font-black tracking-[-0.9px]"
                 style={{ fontSize: "clamp(2rem, 4vw, 2.75rem)", color: "#0f172a" }}
               >
-                Kreli favorites
+                {t("featured_section.title")}
               </h2>
               <div className="h-[6px] w-24 rounded-full" style={{ backgroundColor: "#ff6700" }} />
               <p className="max-w-[520px] text-[16px] font-medium text-[#64748b]">
-                Our selection of the most requested items.
+                {t("featured_section.subtitle")}
               </p>
             </div>
             <Link
@@ -129,7 +129,7 @@ export default function HomeLandingClient({ categories, featured }: Props) {
                 color: "#0f172a",
               }}
             >
-              View all <ArrowRight className="h-4 w-4" />
+              {t("featured_section.view_all")} <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
 
@@ -167,7 +167,7 @@ export default function HomeLandingClient({ categories, featured }: Props) {
                   <p className="font-black text-[#0f172a]">
                     {item.prixParJour} MAD
                     <span className="ml-1 text-xs font-medium text-[#64748b]">
-                      / jour
+                      {t("catalogue.per_day")}
                     </span>
                   </p>
                 </div>

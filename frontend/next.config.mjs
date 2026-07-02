@@ -5,6 +5,7 @@ const nextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "randomuser.me" },
       { protocol: "https", hostname: "api.dicebear.com" },
+      { protocol: "https", hostname: "i.pravatar.cc" },
       { protocol: "http", hostname: "localhost" },
       // Production backend hosting platforms
       { protocol: "https", hostname: "*.vercel.app" },

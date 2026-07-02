@@ -29,7 +29,7 @@ export default function Footer() {
 
   const columns = [
     {
-      heading: "Plateforme",
+      heading: t("footer.col_platform"),
       links: [
         { label: t("footer.link_catalogue"), href: "/catalogue" },
         { label: t("footer.link_how"), href: "/about#how" },
@@ -37,14 +37,14 @@ export default function Footer() {
       ],
     },
     {
-      heading: "Propriétaires",
+      heading: t("footer.col_owners"),
       links: [
-        { label: "Publier un matériel", href: "/dashboard/proprietaire/ajouter" },
-        { label: "Dashboard", href: "/dashboard/proprietaire" },
+        { label: t("footer.link_publish"), href: "/dashboard/proprietaire/ajouter" },
+        { label: t("nav.dashboard"), href: "/dashboard/proprietaire" },
       ],
     },
     {
-      heading: "Support",
+      heading: t("footer.col_support"),
       links: [
         { label: t("footer.link_contact"), href: "mailto:support@Kreli.ma" },
         { label: t("footer.link_privacy"), href: "#" },
@@ -54,9 +54,9 @@ export default function Footer() {
   ];
 
   const socials = [
-    { icon: <FacebookIcon />, href: "https://facebook.com", label: "Facebook" },
-    { icon: <TwitterIcon />, href: "https://twitter.com", label: "Twitter" },
-    { icon: <LinkedInIcon />, href: "https://linkedin.com", label: "LinkedIn" },
+    { icon: <FacebookIcon />, href: "https://facebook.com", label: t("footer.social_facebook") },
+    { icon: <TwitterIcon />, href: "https://twitter.com", label: t("footer.social_twitter") },
+    { icon: <LinkedInIcon />, href: "https://linkedin.com", label: t("footer.social_linkedin") },
   ];
 
   return (

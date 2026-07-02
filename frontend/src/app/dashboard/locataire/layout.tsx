@@ -3,29 +3,27 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useI18n } from "@/context/I18nContext";
+import { useMessagesContext } from "@/context/MessagesContext";
+import { useNotifications } from "@/hooks/useNotifications";
 import { Menu, Bell } from "lucide-react";
 import Link from "next/link";
 import LocataireSidebar from "@/components/dashboard/LocataireSidebar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { getNotifications } from "@/lib/api";
 
 export default function LocataireLayout({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuth();
+  const { user, token, isLoading } = useAuth();
+  const { t } = useI18n();
+  const { totalUnread } = useMessagesContext();
+  const { unreadCount } = useNotifications(token);
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [unread, setUnread] = useState(0);
 
   useEffect(() => {
     if (!isLoading && !user) {
       router.push("/auth/login");
     }
   }, [isLoading, user, router]);
-
-  useEffect(() => {
-    if (user) {
-      getNotifications().then((r) => setUnread(r.unreadCount)).catch(() => {});
-    }
-  }, [user]);
 
   if (isLoading || !user) {
     return (
@@ -39,12 +37,12 @@ export default function LocataireLayout({ children }: { children: React.ReactNod
     <div className="flex h-screen overflow-hidden" style={{ background: "#F8FAFC" }}>
 
       <aside className="hidden w-[240px] shrink-0 overflow-y-auto lg:block">
-        <LocataireSidebar unreadMessages={unread} />
+        <LocataireSidebar unreadMessages={totalUnread} />
       </aside>
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className="w-[240px] p-0 border-0" showCloseButton={false}>
-          <LocataireSidebar onClose={() => setMobileOpen(false)} unreadMessages={unread} />
+          <LocataireSidebar onClose={() => setMobileOpen(false)} unreadMessages={totalUnread} />
         </SheetContent>
       </Sheet>
 
@@ -57,7 +55,7 @@ export default function LocataireLayout({ children }: { children: React.ReactNod
           <button
             onClick={() => setMobileOpen(true)}
             className="grid h-9 w-9 place-items-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100"
-            aria-label="Menu"
+            aria-label={t("nav.menu")}
           >
             <Menu className="h-5 w-5" strokeWidth={1.75} />
           </button>
@@ -77,15 +75,15 @@ export default function LocataireLayout({ children }: { children: React.ReactNod
           <Link
             href="/dashboard/locataire"
             className="relative grid h-9 w-9 place-items-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100"
-            aria-label="Notifications"
+            aria-label={t("notifications.title")}
           >
             <Bell className="h-5 w-5" strokeWidth={1.75} />
-            {unread > 0 && (
+            {unreadCount > 0 && (
               <span
                 className="absolute -right-0.5 -top-0.5 grid h-4 min-w-[16px] place-items-center rounded-full px-1 text-[9px] font-bold text-white"
                 style={{ background: "#F97316" }}
               >
-                {unread > 9 ? "9+" : unread}
+                {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
           </Link>

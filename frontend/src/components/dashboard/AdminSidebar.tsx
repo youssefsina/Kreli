@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useI18n } from "@/context/I18nContext";
 import {
   LayoutGrid,
   Tag,
@@ -20,19 +21,19 @@ import {
 
 type NavItem = {
   href: string;
-  label: string;
+  labelKey: string;
   icon: typeof Package;
   exact?: boolean;
 };
 
 const PRIMARY_NAV: NavItem[] = [
-  { href: "/dashboard/admin",            label: "Tableau de bord", icon: LayoutGrid, exact: true },
-  { href: "/dashboard/admin/categories", label: "Catégories",      icon: Tag },
-  { href: "/dashboard/admin/materiels",  label: "Matériels",       icon: Package },
-  { href: "/dashboard/admin/locations",  label: "Locations",       icon: Inbox },
-  { href: "/dashboard/admin/paiements",  label: "Paiements",       icon: DollarSign },
-  { href: "/dashboard/admin/litiges",    label: "Litiges",         icon: AlertTriangle },
-  { href: "/dashboard/admin/users",      label: "Utilisateurs",    icon: Users },
+  { href: "/dashboard/admin",            labelKey: "nav.dashboard",             icon: LayoutGrid, exact: true },
+  { href: "/dashboard/admin/categories", labelKey: "nav.categories",            icon: Tag },
+  { href: "/dashboard/admin/materiels",  labelKey: "dashboard.materials_admin", icon: Package },
+  { href: "/dashboard/admin/locations",  labelKey: "dashboard.locations_admin", icon: Inbox },
+  { href: "/dashboard/admin/paiements",  labelKey: "dashboard.payments",        icon: DollarSign },
+  { href: "/dashboard/admin/litiges",    labelKey: "dashboard.disputes",        icon: AlertTriangle },
+  { href: "/dashboard/admin/users",      labelKey: "dashboard.users",           icon: Users },
 ];
 
 interface Props {
@@ -43,6 +44,7 @@ export default function AdminSidebar({ onClose }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { t } = useI18n();
 
   function handleLogout() {
     logout();
@@ -78,7 +80,7 @@ export default function AdminSidebar({ onClose }: Props) {
           <button
             onClick={onClose}
             className="grid h-7 w-7 place-items-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100"
-            aria-label="Fermer"
+            aria-label={t("nav.close")}
           >
             <X className="h-4 w-4" />
           </button>
@@ -92,17 +94,17 @@ export default function AdminSidebar({ onClose }: Props) {
         >
           <Shield className="h-3.5 w-3.5" style={{ color: "#F97316" }} strokeWidth={2} />
           <span className="text-[10px] font-bold uppercase tracking-widest text-[#F97316]">
-            Administration
+            {t("dashboard.administration")}
           </span>
         </div>
       </div>
 
       <p className="px-5 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-300">
-        Navigation
+        {t("dashboard.navigation")}
       </p>
 
       <nav className="flex flex-col gap-0.5 px-3">
-        {PRIMARY_NAV.map(({ href, label, icon: Icon, exact }) => {
+        {PRIMARY_NAV.map(({ href, labelKey, icon: Icon, exact }) => {
           const active = isActive(href, exact);
           return (
             <Link
@@ -133,7 +135,7 @@ export default function AdminSidebar({ onClose }: Props) {
                 strokeWidth={active ? 2.25 : 1.75}
                 style={{ color: active ? "#F8812B" : undefined }}
               />
-              <span className="flex-1 truncate">{label}</span>
+              <span className="flex-1 truncate">{t(labelKey)}</span>
             </Link>
           );
         })}
@@ -154,7 +156,7 @@ export default function AdminSidebar({ onClose }: Props) {
           }}
         >
           <Home className="h-[17px] w-[17px] shrink-0" strokeWidth={1.75} />
-          <span className="flex-1 truncate">Retour à l&apos;accueil</span>
+          <span className="flex-1 truncate">{t("common.back_home")}</span>
         </Link>
       </nav>
 
@@ -171,8 +173,13 @@ export default function AdminSidebar({ onClose }: Props) {
             style={{ background: "#0F172A" }}
           >
             {user?.photo ? (
-
-              <img src={user.photo} alt={user.nom} className="h-9 w-9 object-cover" />
+              <img
+                src={user.photo}
+                alt={user.nom}
+                className="h-9 w-9 object-cover"
+                referrerPolicy="no-referrer"
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/avatar-placeholder.svg"; }}
+              />
             ) : (
               initials
             )}
@@ -184,13 +191,13 @@ export default function AdminSidebar({ onClose }: Props) {
 
           <div className="min-w-0 flex-1">
             <p className="truncate text-[13px] font-semibold text-[#0F172A]">{user?.nom}</p>
-            <p className="text-[11px] font-semibold" style={{ color: "#F97316" }}>Administrateur</p>
+            <p className="text-[11px] font-semibold" style={{ color: "#F97316" }}>{t("auth.role_admin")}</p>
           </div>
 
           <button
             onClick={handleLogout}
             className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500"
-            aria-label="Se déconnecter"
+            aria-label={t("nav.logout")}
           >
             <LogOut className="h-[15px] w-[15px]" />
           </button>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, Suspense } from "react";
-import { Eye, EyeOff, Mail, Lock, Headphones, Users } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { loginUser } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useI18n } from "@/context/I18nContext";
@@ -161,24 +161,6 @@ function LoginForm() {
               {t("auth.signup_link")}
             </Link>
           </p>
-        </div>
-      </div>
-
-      
-      <div className="border-t border-[#e2e8f0] dark:border-slate-700 bg-white dark:bg-slate-800 py-6">
-        <div className="mx-auto flex max-w-sm items-center justify-around gap-6">
-          {[
-            { icon: Lock, label: t("auth.trust_secure") },
-            { icon: Headphones, label: t("auth.trust_support") },
-            { icon: Users, label: t("auth.trust_community") },
-          ].map((item) => (
-            <div key={item.label} className="flex flex-col items-center gap-1.5">
-              <item.icon className="h-5 w-5 text-[#ff6700]" strokeWidth={1.8} />
-              <span className="text-[10px] font-black uppercase tracking-[2px] text-[#94a3b8] dark:text-slate-500">
-                {item.label}
-              </span>
-            </div>
-          ))}
         </div>
       </div>
 

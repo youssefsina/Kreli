@@ -1,6 +1,7 @@
 'use client'
 
 import { Quote, Star } from 'lucide-react'
+import { useI18n } from '@/context/I18nContext'
 
 const TESTIMONIALS = [
   {
@@ -27,6 +28,7 @@ const TESTIMONIALS = [
 ]
 
 export function StaggerTestimonials() {
+  const { t } = useI18n()
   return (
     <section className="bg-[#f5f5f4] py-24">
       <div className="mx-auto max-w-[1280px] px-4">
@@ -35,7 +37,7 @@ export function StaggerTestimonials() {
             className="rounded-full px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.18em]"
             style={{ backgroundColor: 'rgba(255,103,0,0.1)', color: '#ff6700' }}
           >
-            Avis clients
+            {t('testimonials.label')}
           </span>
           <h2
             className="font-display font-black tracking-tight"
@@ -44,10 +46,10 @@ export function StaggerTestimonials() {
               fontSize: 'clamp(2rem, 4vw, 2.75rem)',
             }}
           >
-            Ce que disent nos utilisateurs
+            {t('testimonials.title')}
           </h2>
           <p className="max-w-md text-[16px] leading-relaxed text-[#64748b]">
-            Plus de 1 247 professionnels font confiance à Kreli au quotidien.
+            {t('testimonials.subtitle')}
           </p>
         </div>
 
@@ -63,7 +65,7 @@ export function StaggerTestimonials() {
             >
               <div className="mb-5 flex items-center justify-between">
                 <Quote className="h-6 w-6 text-[#ff6700]" />
-                <div className="flex gap-0.5" aria-label="5 étoiles">
+                <div className="flex gap-0.5" aria-label={t('testimonials.stars_label')}>
                   {Array.from({ length: 5 }).map((_, index) => (
                     <Star key={index} className="h-4 w-4 fill-[#ff6700] text-[#ff6700]" />
                   ))}

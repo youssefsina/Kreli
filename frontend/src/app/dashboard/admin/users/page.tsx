@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { getAdminAllUsers, updateUserStatus, type AuthUser } from "@/lib/api";
 import { DashCard, Alert, Pagination } from "@/components/dashboard/DashboardUI";
 import { formatShortDate } from "@/lib/format";
+import { useI18n } from "@/context/I18nContext";
 
 const SELECT_CLASS =
   "rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] px-2.5 py-1.5 text-xs text-[#0F172A] outline-none transition focus:border-[#F97316] focus:bg-white";
@@ -29,6 +30,7 @@ const STATUT_CHIP: Record<string, { bg: string; color: string; label: string }> 
 };
 
 function AdminUsersContent() {
+  const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [users, setUsers] = useState<AuthUser[]>([]);
@@ -75,7 +77,7 @@ function AdminUsersContent() {
       <motion.div variants={STAGGER} initial="hidden" animate="show" className="space-y-5">
         <motion.div variants={ITEM} className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-[#0F172A] lg:text-3xl">Utilisateurs</h1>
+            <h1 className="text-2xl font-black text-[#0F172A] lg:text-3xl">{t("dashboard.users")}</h1>
             <p className="mt-1 text-sm text-slate-400">{pagination.total} comptes</p>
           </div>
           <div className="flex gap-2.5">
@@ -111,8 +113,8 @@ function AdminUsersContent() {
               className="hidden items-center gap-3 px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-[#94A3B8] md:grid"
               style={{ gridTemplateColumns: GRID_COLS, borderBottom: "1px solid #F1F5F9", background: "#FAFAFA" }}
             >
-              <span>Nom</span><span>Email</span><span>Rôle</span><span>Statut</span><span>Inscription</span>
-              <span className="text-right">Actions</span>
+              <span>{t("table.name")}</span><span>{t("auth.email")}</span><span>{t("table.role")}</span><span>{t("table.status")}</span><span>{t("table.registration")}</span>
+              <span className="text-right">{t("table.action")}</span>
             </div>
 
             {loading ? (

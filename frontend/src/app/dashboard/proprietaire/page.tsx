@@ -15,6 +15,7 @@ import { StatCard } from "@/components/dashboard/DashboardUI";
 import { RevenueChartCard } from "./RevenueChartCard";
 import { DemandesCard } from "./DemandesCard";
 import { ParcTable } from "./ParcTable";
+import { useI18n } from "@/context/I18nContext";
 
 interface OwnerStats {
   totalMateriels: number;
@@ -66,6 +67,7 @@ function buildMonthly(locs: RevenueLoc[]): { month: string; revenue: number }[] 
 }
 
 export default function ProprietaireDashboardPage() {
+  const { t } = useI18n();
   const [stats, setStats] = useState<OwnerStats | null>(null);
   const [locations, setLocations] = useState<Location[]>([]);
   const [materiels, setMateriels] = useState<Materiel[]>([]);
@@ -138,7 +140,7 @@ export default function ProprietaireDashboardPage() {
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-[#0F172A] lg:text-3xl">Tableau de bord</h1>
+          <h1 className="text-2xl font-black text-[#0F172A] lg:text-3xl">{t("nav.dashboard")}</h1>
           <p className="mt-1 text-sm text-slate-400">
             {pending > 0
               ? `${pending} demande${pending > 1 ? "s" : ""} en attente de validation`

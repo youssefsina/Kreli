@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useMessagesContext } from "@/context/MessagesContext";
 import {
-  getMyConversations,
   getConversationMessages,
   uploadMaterielImage,
   type Conversation,
@@ -91,7 +90,15 @@ function Avatar({
       }}
     >
       {photo ? (
-        <Image src={photo} alt={nom} width={size} height={size} className="object-cover" />
+        <img
+          src={photo}
+          alt={nom}
+          width={size}
+          height={size}
+          referrerPolicy="no-referrer"
+          className="h-full w-full object-cover"
+          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/avatar-placeholder.svg"; }}
+        />
       ) : (
         initials(nom)
       )}
@@ -103,14 +110,14 @@ function Avatar({
 
 export default function MessagesView() {
   const { user, token } = useAuth();
+  const { conversations, loading, totalUnread, setActiveConversationId, markConversationRead } =
+    useMessagesContext();
   const searchParams = useSearchParams();
   const convParam = searchParams.get("conv");
 
-  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConv, setActiveConv] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [search, setSearch] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -121,16 +128,12 @@ export default function MessagesView() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const autoOpenedRef = useRef(false);
 
-  
-  useEffect(() => {
-    if (!user) return;
-    getMyConversations()
-      .then(setConversations)
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [user]);
 
-  
+  useEffect(() => {
+    return () => setActiveConversationId(null);
+  }, [setActiveConversationId]);
+
+
   useEffect(() => {
     if (!token) return;
     const socket = getSocket(token);
@@ -142,21 +145,6 @@ export default function MessagesView() {
           if (prev.some((m) => m._id === message._id)) return prev;
           return [...prev, message];
         });
-        setConversations((prev) =>
-          prev.map((c) =>
-            c._id === conversationId
-              ? {
-                  ...c,
-                  lastMessage: message,
-                  dernierMsgAt: message.createdAt,
-                  unreadCount:
-                    activeConv?._id === conversationId
-                      ? 0
-                      : c.unreadCount + (message.expediteurId._id !== user?._id ? 1 : 0),
-                }
-              : c
-          )
-        );
       }
     );
     socket.on("message_error", ({ message }: { message: string }) => {
@@ -166,27 +154,25 @@ export default function MessagesView() {
       socket.off("receive_message");
       socket.off("message_error");
     };
-  }, [token, activeConv, user]);
+  }, [token, activeConv]);
 
-  
+
   const openConversation = useCallback(
     async (conv: Conversation) => {
       setActiveConv(conv);
+      setActiveConversationId(conv._id);
       setMessages([]);
       try {
         const msgs = await getConversationMessages(conv._id);
         setMessages(msgs);
-        setConversations((prev) =>
-          prev.map((c) => (c._id === conv._id ? { ...c, unreadCount: 0 } : c))
-        );
-        if (token) getSocket(token).emit("mark_read", { conversationId: conv._id });
+        markConversationRead(conv._id);
       } catch {}
       setTimeout(() => inputRef.current?.focus(), 80);
     },
-    [token]
+    [markConversationRead, setActiveConversationId]
   );
 
-  
+
   useEffect(() => {
     if (autoOpenedRef.current || !convParam || conversations.length === 0) return;
     const target = conversations.find((c) => c._id === convParam);
@@ -250,7 +236,6 @@ export default function MessagesView() {
   });
 
   const grouped = groupByDay(messages);
-  const totalUnread = conversations.reduce((s, c) => s + c.unreadCount, 0);
 
   
   return (
@@ -653,6 +638,7 @@ export default function MessagesView() {
                                 <img
                                   src={msg.imageUrl}
                                   alt="photo"
+                                  onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.jpg"; }}
                                   style={{
                                     display: "block",
                                     maxWidth: 260,
