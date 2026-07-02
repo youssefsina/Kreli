@@ -580,6 +580,7 @@ export type ChatMessage = {
   _id: string;
   conversationId: string;
   expediteurId: ConvUser;
+  receiverId?: string;
   contenu: string;
   imageUrl?: string | null;
   lu: boolean;
@@ -622,6 +623,23 @@ export async function getMyConversations(): Promise<Conversation[]> {
 export async function getConversationMessages(conversationId: string): Promise<ChatMessage[]> {
   const response = await fetch(`${API_BASE_URL}/conversations/${conversationId}/messages`, {
     headers: { Authorization: `Bearer ${getToken()}` },
+  });
+  const body = await response.json();
+  if (!response.ok) throw new Error(body.message ?? "Erreur");
+  return body.data;
+}
+
+export async function sendConversationMessage(
+  conversationId: string,
+  contenu: string
+): Promise<ChatMessage> {
+  const response = await fetch(`${API_BASE_URL}/conversations/${conversationId}/messages`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify({ contenu }),
   });
   const body = await response.json();
   if (!response.ok) throw new Error(body.message ?? "Erreur");

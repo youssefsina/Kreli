@@ -12,6 +12,8 @@ export function ContactModal({
   materielNom,
   message,
   onMessageChange,
+  sending = false,
+  error = null,
   onCancel,
   onSend,
 }: {
@@ -21,6 +23,8 @@ export function ContactModal({
   materielNom: string;
   message: string;
   onMessageChange: (value: string) => void;
+  sending?: boolean;
+  error?: string | null;
   onCancel: () => void;
   onSend: () => void;
 }) {
@@ -37,13 +41,19 @@ export function ContactModal({
             value={message}
             onChange={(e) => onMessageChange(e.target.value)}
             placeholder={t("catalogue.contact_placeholder").replace("{materiel}", materielNom)}
-            className="min-h-[120px] w-full rounded-lg border border-slate-300 p-3 text-sm focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            disabled={sending}
+            className="min-h-[120px] w-full rounded-lg border border-slate-300 p-3 text-sm focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:opacity-60"
           />
+          {error && (
+            <p className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {error}
+            </p>
+          )}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onCancel}>{t("common.cancel")}</Button>
-          <Button onClick={onSend} className="bg-slate-900 hover:bg-slate-800">
-            {t("catalogue.send_message")}
+          <Button variant="outline" onClick={onCancel} disabled={sending}>{t("common.cancel")}</Button>
+          <Button onClick={onSend} disabled={sending} className="bg-slate-900 hover:bg-slate-800">
+            {sending ? t("auth.sending") : t("catalogue.send_message")}
           </Button>
         </DialogFooter>
       </DialogContent>

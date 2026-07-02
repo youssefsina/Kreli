@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
-
-const PHONE_RE = /(\+?[\d][\s\-\.]{0,2}){7,}\d/;
-const URL_RE = /\b(https?:\/\/|www\.)\S|\b\S+\.(com|net|org|io|ma|fr|info|co)\b/i;
+const Conversation = require("../models/Conversation");
+const Message = require("../models/Message");
+const { detectRestrictedContent, isParticipant, createMessageAndNotify } = require("../services/messages.service");
 
 function initSocket(io) {
   io.use((socket, next) => {
@@ -35,58 +35,23 @@ function initSocket(io) {
     socket.on("send_message", async ({ conversationId, contenu, imageUrl }) => {
       if (!conversationId || (!contenu?.trim() && !imageUrl)) return;
 
-      if (contenu?.trim() && (PHONE_RE.test(contenu) || URL_RE.test(contenu))) {
+      const restricted = detectRestrictedContent(contenu);
+      if (restricted) {
         socket.emit("message_error", {
-          message: "Les numأ©ros de tأ©lأ©phone et les liens ne sont pas autorisأ©s dans le chat.",
+          message:
+            restricted === "phone"
+              ? "Les numéros de téléphone ne sont pas autorisés dans le chat."
+              : "Les liens externes ne sont pas autorisés dans le chat.",
         });
         return;
       }
 
       try {
-        const Conversation = require("../models/Conversation");
-        const Message = require("../models/Message");
-        const Notification = require("../models/Notification");
-
         const conversation = await Conversation.findById(conversationId);
         if (!conversation) return;
+        if (!isParticipant(conversation, uid)) return;
 
-        const isParticipant =
-          conversation.locataireId.toString() === uid ||
-          conversation.proprietaireId.toString() === uid;
-        if (!isParticipant) return;
-
-        const message = await Message.create({
-          conversationId,
-          expediteurId: uid,
-          contenu: contenu?.trim() ?? "",
-          ...(imageUrl && { imageUrl }),
-        });
-
-        await Conversation.findByIdAndUpdate(conversationId, { dernierMsgAt: new Date() });
-
-        const populated = await message.populate("expediteurId", "nom photo");
-
-        const recipientIsLocataire = conversation.locataireId.toString() !== uid;
-        const recipientId = recipientIsLocataire
-          ? conversation.locataireId.toString()
-          : conversation.proprietaireId.toString();
-
-        io.to(recipientId).emit("receive_message", { conversationId, message: populated });
-        socket.emit("receive_message", { conversationId, message: populated });
-
-        const messagesBase = recipientIsLocataire
-          ? "/dashboard/locataire/messages"
-          : "/dashboard/proprietaire/messages";
-
-        const notification = await Notification.create({
-          destinataireId: recipientId,
-          type: "message",
-          titre: `Nouveau message de ${populated.expediteurId.nom}`,
-          contenu: contenu?.trim() ? contenu.trim().slice(0, 100) : "ًں“· Photo",
-          lienRedirection: `${messagesBase}?conv=${conversationId}`,
-        });
-
-        io.to(recipientId).emit("new_notification", { notification });
+        await createMessageAndNotify({ io, conversation, senderId: uid, contenu, imageUrl });
       } catch (err) {
         socket.emit("message_error", { message: err.message });
       }
@@ -96,16 +61,9 @@ function initSocket(io) {
       if (!conversationId) return;
 
       try {
-        const Conversation = require("../models/Conversation");
-        const Message = require("../models/Message");
-
         const conversation = await Conversation.findById(conversationId);
         if (!conversation) return;
-
-        const isParticipant =
-          conversation.locataireId.toString() === uid ||
-          conversation.proprietaireId.toString() === uid;
-        if (!isParticipant) return;
+        if (!isParticipant(conversation, uid)) return;
 
         const result = await Message.updateMany(
           { conversationId, expediteurId: { $ne: uid }, lu: false },
